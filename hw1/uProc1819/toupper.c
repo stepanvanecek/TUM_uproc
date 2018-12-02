@@ -6,8 +6,6 @@
 #include "options.h"
 
 
-//int gettimeofday(struct timeval *tv, struct timezone *tz);
-
 int debug = 0;
 double *results;
 double *ratios;
@@ -17,26 +15,35 @@ int no_sz = 1, no_ratio =1, no_version=1;
 
 
 
-static inline
-double gettime(void) {
-  struct timespec tp;
-  clock_gettime(CLOCK_REALTIME, &tp);
-  return tp.tv_nsec/1000;
+static inline double gettime(void) {
+	
+	//Use the gettimeofday system call function (see gettimeofday documentation)
+	struct timeval tm;
+	gettimeofday(&tm, NULL);
+
+	//Get the time in microseconds
+	return tm.tv_usec;
+	
 }
 
 
+//Uses the ASCII table to turn a lower case to upper case character
 static void toupper_simple(char * text) {
-  // to be implemented
-  int i = 0;
-  while(text[i] != '\0')
-  {
-    if(text[i] > 96 && text[i] < 123)
-    {
-      text[i] -= 32;
-    }
-    i++;
-  }
+  
+  	int i=0;
 
+  	//Iterate for the entire string
+	while(text[i] !=  '\0'){
+		//Check if the character is indeed a lower case character (alternatively use ASCII code)
+		if(text[i] >= 'a' && text[i] <= 'z'){
+			// Take the capital version of the letter
+			text[i] = text[i] - 32;
+		}
+
+
+		//next character
+		i++;
+	}
 }
 
 
@@ -46,7 +53,7 @@ static void toupper_optimised(char * text) {
 
 
 /*****************************************************************/
-
+//Utility functions
 
 // align at 16byte boundaries
 void* mymalloc(unsigned long int size)
@@ -55,6 +62,7 @@ void* mymalloc(unsigned long int size)
      return (void*)((unsigned long int)addr /16*16+16);
 }
 
+// Randomly generate a letter character
 char createChar(int ratio){
 	char isLower = rand()%100;
 
@@ -70,6 +78,7 @@ char createChar(int ratio){
 
 }
 
+// Creates a string
 char * init(unsigned long int sz, int ratio){
     int i=0;
     char *text = (char *) mymalloc(sz+1);
