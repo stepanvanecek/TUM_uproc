@@ -3,8 +3,8 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <immintrin.h>
 #include "options.h"
-
 
 //int gettimeofday(struct timeval *tv, struct timezone *tz);
 
@@ -27,21 +27,67 @@ double gettime(void) {
 
 static void toupper_simple(char * text) {
   // to be implemented
-  int i = 0;
-  while(text[i] != '\0')
-  {
-    if(text[i] > 96 && text[i] < 123)
+    int i = 0;
+    while(text[i] != '\0')
     {
-      text[i] -= 32;
+        if(text[i] > 96 && text[i] < 123)
+        {
+         //   if(debug) printf("simple method changes text");
+            text[i] -= 32;
+        }
+        i++;
     }
-    i++;
-  }
-
 }
 
+/*static void toupper_optimised(char * text) {
+  // to be implemented
+    int upperBound, lowerBound;
+    __m256i curr;
+    int i = 0;
+    __m256i lower = _mm256_cvtepi8_epi16(_mm_load_si128((__m128i*)96));
+    printf("lower: %d", lower);
+    __m256i upper = _mm256_cvtepi8_epi16(_mm_load_si128((__m128i*)123));
+    printf("upper: %d", upper);
+   /* while(text[i] != '\0')
+    {
+        curr = _mm256_cvtepi8_epi16(_mm_load_si128((__m128i*)text[i]));
+        printf("curr: %d", curr);
+        upperBound = _mm256_cvtsi256_si32 (_mm256_cmpgt_epi16 (curr, lower));
+        lowerBound = _mm256_cvtsi256_si32 (_mm256_cmpgt_epi16(curr, upper));
+        if( lowerBound && !upperBound )
+        {
+            text[i] -= 32;
+        }
+        i++;
+    }
+} */
 
 static void toupper_optimised(char * text) {
-  // to be implemented
+    // to be implemented
+    int sub, i = 0;
+    int bound = 0;
+    int curr;
+    while(text[i] != '\0')
+    {
+        curr = (int)text[i];
+        __asm__ (
+                 "cmp %%ebx, %%eax;"
+                 "jg GREATER;"
+                 "jmp REST;"
+                 "GREATER: cmp %%eax, %%edx;"
+                 "jg REST;"
+                 "movl %1, %%edx;"
+                 "jmp REST;"
+                 "REST: "
+                 : "=d" (bound) : "a" (curr) , "b" (96), "c" (123), "d" (0) );
+      //  if(debug) printf("Bound: for %d is  %d ...\n", text[i], bound);
+        if(bound > 0)
+        {
+      //      if(debug) printf("optimization changes the value for %d", text[i]);
+            __asm__ ( "subl %%ebx, %%eax;" : "=a" (curr) : "a" (curr) , "b" (32) );
+        }
+        __asm__ ( "addl %%ebx, %%eax;" : "=a" (i) : "a" (1), "b" (i) );
+    }
 }
 
 
@@ -102,14 +148,17 @@ void run_toupper(int size, int ratio, int version, toupperfunc f, const char* na
     char *text = init(sizes[size], ratios[ratio]);
 
 
-    if(debug) printf("Before: %.40s...\n",text);
+    if(debug) printf("Before: %0.4s...\n",text);
 
     start = gettime();
+    if(debug) printf("Start Time: %f...\n",start);
     (*f)(text);
     stop = gettime();
+    if(debug) printf("Stop Time: %f...\n",stop);
     results[index] = stop-start;
-
-    if(debug) printf("After:  %.40s...\n",text);
+    if(debug) printf("Total Time: %f...\n",results[index]);
+    
+    if(debug) printf("After:  %0.4s...\n",text);
 }
 
 struct _toupperversion {
@@ -128,7 +177,6 @@ void run(int size, int ratio)
 	for(v=0; toupperversion[v].func !=0; v++) {
 		run_toupper(size, ratio, v, toupperversion[v].func, toupperversion[v].name);
 	}
-
 }
 
 void printresults(){

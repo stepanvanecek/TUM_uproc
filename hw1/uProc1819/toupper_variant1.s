@@ -1,14 +1,17 @@
 	.section	__TEXT,__text,regular,pure_instructions
-	.build_version macos, 10, 14
-	.globl	_mymalloc               ## -- Begin function mymalloc
+	.macosx_version_min 10, 13
+	.globl	_mymalloc
 	.p2align	4, 0x90
 _mymalloc:                              ## @mymalloc
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi0:
 	.cfi_def_cfa_offset 16
+Lcfi1:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi2:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movq	%rdi, -8(%rbp)
@@ -24,16 +27,19 @@ _mymalloc:                              ## @mymalloc
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.globl	_createChar             ## -- Begin function createChar
+
+	.globl	_createChar
 	.p2align	4, 0x90
 _createChar:                            ## @createChar
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi3:
 	.cfi_def_cfa_offset 16
+Lcfi4:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi5:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movl	%edi, -4(%rbp)
@@ -46,7 +52,7 @@ _createChar:                            ## @createChar
 	movsbl	-5(%rbp), %edx
 	cmpl	-4(%rbp), %edx
 	jge	LBB1_2
-## %bb.1:
+## BB#1:
 	movb	$0, -5(%rbp)
 	jmp	LBB1_3
 LBB1_2:
@@ -71,16 +77,19 @@ LBB1_3:
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.globl	_init                   ## -- Begin function init
+
+	.globl	_init
 	.p2align	4, 0x90
 _init:                                  ## @init
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi6:
 	.cfi_def_cfa_offset 16
+Lcfi7:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi8:
 	.cfi_def_cfa_register %rbp
 	subq	$32, %rsp
 	movq	%rdi, -8(%rbp)
@@ -97,7 +106,7 @@ LBB2_1:                                 ## =>This Inner Loop Header: Depth=1
 	movslq	-16(%rbp), %rax
 	cmpq	-8(%rbp), %rax
 	jae	LBB2_4
-## %bb.2:                               ##   in Loop: Header=BB2_1 Depth=1
+## BB#2:                                ##   in Loop: Header=BB2_1 Depth=1
 	movl	-12(%rbp), %edi
 	callq	_createChar
 	movb	%al, -25(%rbp)
@@ -105,7 +114,7 @@ LBB2_1:                                 ## =>This Inner Loop Header: Depth=1
 	movq	-24(%rbp), %rcx
 	movslq	-16(%rbp), %rdx
 	movb	%al, (%rcx,%rdx)
-## %bb.3:                               ##   in Loop: Header=BB2_1 Depth=1
+## BB#3:                                ##   in Loop: Header=BB2_1 Depth=1
 	movl	-16(%rbp), %eax
 	addl	$1, %eax
 	movl	%eax, -16(%rbp)
@@ -119,18 +128,21 @@ LBB2_4:
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.globl	_run_toupper            ## -- Begin function run_toupper
+
+	.globl	_run_toupper
 	.p2align	4, 0x90
 _run_toupper:                           ## @run_toupper
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi9:
 	.cfi_def_cfa_offset 16
+Lcfi10:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi11:
 	.cfi_def_cfa_register %rbp
-	subq	$80, %rsp
+	subq	$96, %rsp
 	movq	_ratios@GOTPCREL(%rip), %rax
 	movq	_sizes@GOTPCREL(%rip), %r9
 	movl	%edi, -4(%rbp)
@@ -159,7 +171,7 @@ _run_toupper:                           ## @run_toupper
 	movq	%rax, -64(%rbp)
 	cmpl	$0, _debug(%rip)
 	je	LBB3_2
-## %bb.1:
+## BB#1:
 	leaq	L_.str(%rip), %rdi
 	movq	-64(%rbp), %rsi
 	movb	$0, %al
@@ -168,66 +180,104 @@ _run_toupper:                           ## @run_toupper
 LBB3_2:
 	callq	_gettime
 	vmovsd	%xmm0, -40(%rbp)
+	cmpl	$0, _debug(%rip)
+	je	LBB3_4
+## BB#3:
+	leaq	L_.str.1(%rip), %rdi
+	vmovsd	-40(%rbp), %xmm0        ## xmm0 = mem[0],zero
+	movb	$1, %al
+	callq	_printf
+	movl	%eax, -72(%rbp)         ## 4-byte Spill
+LBB3_4:
 	movq	-24(%rbp), %rax
 	movq	-64(%rbp), %rdi
 	callq	*%rax
 	callq	_gettime
-	movq	_results@GOTPCREL(%rip), %rax
 	vmovsd	%xmm0, -48(%rbp)
+	cmpl	$0, _debug(%rip)
+	je	LBB3_6
+## BB#5:
+	leaq	L_.str.2(%rip), %rdi
+	vmovsd	-48(%rbp), %xmm0        ## xmm0 = mem[0],zero
+	movb	$1, %al
+	callq	_printf
+	movl	%eax, -76(%rbp)         ## 4-byte Spill
+LBB3_6:
+	movq	_results@GOTPCREL(%rip), %rax
 	vmovsd	-48(%rbp), %xmm0        ## xmm0 = mem[0],zero
 	vsubsd	-40(%rbp), %xmm0, %xmm0
 	movq	(%rax), %rax
-	movslq	-52(%rbp), %rdi
-	vmovsd	%xmm0, (%rax,%rdi,8)
+	movslq	-52(%rbp), %rcx
+	vmovsd	%xmm0, (%rax,%rcx,8)
 	cmpl	$0, _debug(%rip)
-	je	LBB3_4
-## %bb.3:
-	leaq	L_.str.1(%rip), %rdi
+	je	LBB3_8
+## BB#7:
+	leaq	L_.str.3(%rip), %rdi
+	movq	_results@GOTPCREL(%rip), %rax
+	movq	(%rax), %rax
+	movslq	-52(%rbp), %rcx
+	vmovsd	(%rax,%rcx,8), %xmm0    ## xmm0 = mem[0],zero
+	movb	$1, %al
+	callq	_printf
+	movl	%eax, -80(%rbp)         ## 4-byte Spill
+LBB3_8:
+	cmpl	$0, _debug(%rip)
+	je	LBB3_10
+## BB#9:
+	leaq	L_.str.4(%rip), %rdi
 	movq	-64(%rbp), %rsi
 	movb	$0, %al
 	callq	_printf
-	movl	%eax, -72(%rbp)         ## 4-byte Spill
-LBB3_4:
-	addq	$80, %rsp
+	movl	%eax, -84(%rbp)         ## 4-byte Spill
+LBB3_10:
+	addq	$96, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.p2align	4, 0x90         ## -- Begin function gettime
+
+	.p2align	4, 0x90
 _gettime:                               ## @gettime
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi12:
 	.cfi_def_cfa_offset 16
+Lcfi13:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi14:
 	.cfi_def_cfa_register %rbp
 	subq	$32, %rsp
 	xorl	%edi, %edi
 	leaq	-16(%rbp), %rsi
 	callq	_clock_gettime
-	movl	$1000, %edi             ## imm = 0x3E8
-	movl	%edi, %esi
-	movq	-8(%rbp), %rcx
+	movq	-8(%rbp), %rsi
+	movabsq	$2361183241434822607, %rcx ## imm = 0x20C49BA5E353F7CF
 	movl	%eax, -20(%rbp)         ## 4-byte Spill
-	movq	%rcx, %rax
-	cqto
-	idivq	%rsi
-                                        ## implicit-def: %xmm0
-	vcvtsi2sdq	%rax, %xmm0, %xmm0
+	movq	%rsi, %rax
+	imulq	%rcx
+	movq	%rdx, %rax
+	shrq	$63, %rax
+	sarq	$7, %rdx
+	addq	%rax, %rdx
+                                        ## implicit-def: %XMM0
+	vcvtsi2sdq	%rdx, %xmm0, %xmm0
 	addq	$32, %rsp
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.p2align	4, 0x90         ## -- Begin function toupper_simple
+
+	.p2align	4, 0x90
 _toupper_simple:                        ## @toupper_simple
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi15:
 	.cfi_def_cfa_offset 16
+Lcfi16:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi17:
 	.cfi_def_cfa_register %rbp
 	movq	%rdi, -8(%rbp)
 	movl	$0, -12(%rbp)
@@ -237,19 +287,19 @@ LBB5_1:                                 ## =>This Inner Loop Header: Depth=1
 	movsbl	(%rax,%rcx), %edx
 	cmpl	$0, %edx
 	je	LBB5_6
-## %bb.2:                               ##   in Loop: Header=BB5_1 Depth=1
+## BB#2:                                ##   in Loop: Header=BB5_1 Depth=1
 	movq	-8(%rbp), %rax
 	movslq	-12(%rbp), %rcx
 	movsbl	(%rax,%rcx), %edx
 	cmpl	$96, %edx
 	jle	LBB5_5
-## %bb.3:                               ##   in Loop: Header=BB5_1 Depth=1
+## BB#3:                                ##   in Loop: Header=BB5_1 Depth=1
 	movq	-8(%rbp), %rax
 	movslq	-12(%rbp), %rcx
 	movsbl	(%rax,%rcx), %edx
 	cmpl	$123, %edx
 	jge	LBB5_5
-## %bb.4:                               ##   in Loop: Header=BB5_1 Depth=1
+## BB#4:                                ##   in Loop: Header=BB5_1 Depth=1
 	movq	-8(%rbp), %rax
 	movslq	-12(%rbp), %rcx
 	movsbl	(%rax,%rcx), %edx
@@ -265,30 +315,89 @@ LBB5_6:
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.p2align	4, 0x90         ## -- Begin function toupper_optimised
+
+	.p2align	4, 0x90
 _toupper_optimised:                     ## @toupper_optimised
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi18:
 	.cfi_def_cfa_offset 16
+Lcfi19:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi20:
 	.cfi_def_cfa_register %rbp
-	movq	%rdi, -8(%rbp)
+	pushq	%rbx
+Lcfi21:
+	.cfi_offset %rbx, -24
+	movq	%rdi, -16(%rbp)
+	movl	$0, -24(%rbp)
+	movl	$0, -28(%rbp)
+LBB6_1:                                 ## =>This Inner Loop Header: Depth=1
+	movq	-16(%rbp), %rax
+	movslq	-24(%rbp), %rcx
+	movsbl	(%rax,%rcx), %edx
+	cmpl	$0, %edx
+	je	LBB6_5
+## BB#2:                                ##   in Loop: Header=BB6_1 Depth=1
+	movq	-16(%rbp), %rax
+	movslq	-24(%rbp), %rcx
+	movsbl	(%rax,%rcx), %edx
+	movl	%edx, -32(%rbp)
+	movl	-32(%rbp), %eax
+	movl	$96, %ebx
+	movl	$123, %ecx
+	xorl	%edx, %edx
+	## InlineAsm Start
+	cmpl	%ebx, %eax
+	jg	GREATER
+	jmp	REST
+GREATER:
+	cmpl	%eax, %edx
+	jg	REST
+	movl	%eax, %edx
+	jmp	REST
+REST:
+	## InlineAsm End
+	movl	%edx, -28(%rbp)
+	cmpl	$0, -28(%rbp)
+	jle	LBB6_4
+## BB#3:                                ##   in Loop: Header=BB6_1 Depth=1
+	movl	-32(%rbp), %eax
+	movl	$32, %ebx
+	## InlineAsm Start
+	subl	%ebx, %eax
+
+	## InlineAsm End
+	movl	%eax, -32(%rbp)
+LBB6_4:                                 ##   in Loop: Header=BB6_1 Depth=1
+	movl	-24(%rbp), %ebx
+	movl	$1, %eax
+	## InlineAsm Start
+	addl	%ebx, %eax
+
+	## InlineAsm End
+	movl	%eax, -24(%rbp)
+	jmp	LBB6_1
+LBB6_5:
+	popq	%rbx
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.globl	_run                    ## -- Begin function run
+
+	.globl	_run
 	.p2align	4, 0x90
 _run:                                   ## @run
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi22:
 	.cfi_def_cfa_offset 16
+Lcfi23:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi24:
 	.cfi_def_cfa_register %rbp
 	subq	$16, %rsp
 	movl	%edi, -4(%rbp)
@@ -301,7 +410,7 @@ LBB7_1:                                 ## =>This Inner Loop Header: Depth=1
 	addq	%rcx, %rax
 	cmpq	$0, 8(%rax)
 	je	LBB7_4
-## %bb.2:                               ##   in Loop: Header=BB7_1 Depth=1
+## BB#2:                                ##   in Loop: Header=BB7_1 Depth=1
 	leaq	_toupperversion(%rip), %rax
 	movl	-4(%rbp), %edi
 	movl	-8(%rbp), %esi
@@ -316,7 +425,7 @@ LBB7_1:                                 ## =>This Inner Loop Header: Depth=1
 	addq	%r8, %rax
 	movq	(%rax), %r8
 	callq	_run_toupper
-## %bb.3:                               ##   in Loop: Header=BB7_1 Depth=1
+## BB#3:                                ##   in Loop: Header=BB7_1 Depth=1
 	movl	-12(%rbp), %eax
 	addl	$1, %eax
 	movl	%eax, -12(%rbp)
@@ -326,20 +435,23 @@ LBB7_4:
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.globl	_printresults           ## -- Begin function printresults
+
+	.globl	_printresults
 	.p2align	4, 0x90
 _printresults:                          ## @printresults
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi25:
 	.cfi_def_cfa_offset 16
+Lcfi26:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi27:
 	.cfi_def_cfa_register %rbp
 	subq	$32, %rsp
-	leaq	L_.str.4(%rip), %rdi
-	leaq	L_.str.5(%rip), %rsi
+	leaq	L_.str.7(%rip), %rdi
+	leaq	L_.str.8(%rip), %rsi
 	movb	$0, %al
 	callq	_printf
 	movl	$0, -8(%rbp)
@@ -350,7 +462,7 @@ LBB8_1:                                 ## =>This Loop Header: Depth=1
 	movl	-8(%rbp), %eax
 	cmpl	_no_sz(%rip), %eax
 	jge	LBB8_12
-## %bb.2:                               ##   in Loop: Header=BB8_1 Depth=1
+## BB#2:                                ##   in Loop: Header=BB8_1 Depth=1
 	movl	$0, -12(%rbp)
 LBB8_3:                                 ##   Parent Loop BB8_1 Depth=1
                                         ## =>  This Loop Header: Depth=2
@@ -358,8 +470,8 @@ LBB8_3:                                 ##   Parent Loop BB8_1 Depth=1
 	movl	-12(%rbp), %eax
 	cmpl	_no_ratio(%rip), %eax
 	jge	LBB8_10
-## %bb.4:                               ##   in Loop: Header=BB8_3 Depth=2
-	leaq	L_.str.6(%rip), %rdi
+## BB#4:                                ##   in Loop: Header=BB8_3 Depth=2
+	leaq	L_.str.9(%rip), %rdi
 	movq	_ratios@GOTPCREL(%rip), %rax
 	movq	_sizes@GOTPCREL(%rip), %rcx
 	movq	(%rcx), %rcx
@@ -378,8 +490,8 @@ LBB8_5:                                 ##   Parent Loop BB8_1 Depth=1
 	movl	-4(%rbp), %eax
 	cmpl	_no_version(%rip), %eax
 	jge	LBB8_8
-## %bb.6:                               ##   in Loop: Header=BB8_5 Depth=3
-	leaq	L_.str.7(%rip), %rdi
+## BB#6:                                ##   in Loop: Header=BB8_5 Depth=3
+	leaq	L_.str.10(%rip), %rdi
 	movq	_results@GOTPCREL(%rip), %rax
 	leaq	_toupperversion(%rip), %rcx
 	movl	-12(%rbp), %edx
@@ -403,17 +515,17 @@ LBB8_5:                                 ##   Parent Loop BB8_1 Depth=1
 	movb	$1, %al
 	callq	_printf
 	movl	%eax, -28(%rbp)         ## 4-byte Spill
-## %bb.7:                               ##   in Loop: Header=BB8_5 Depth=3
+## BB#7:                                ##   in Loop: Header=BB8_5 Depth=3
 	movl	-4(%rbp), %eax
 	addl	$1, %eax
 	movl	%eax, -4(%rbp)
 	jmp	LBB8_5
 LBB8_8:                                 ##   in Loop: Header=BB8_3 Depth=2
-	leaq	L_.str.8(%rip), %rdi
+	leaq	L_.str.11(%rip), %rdi
 	movb	$0, %al
 	callq	_printf
 	movl	%eax, -32(%rbp)         ## 4-byte Spill
-## %bb.9:                               ##   in Loop: Header=BB8_3 Depth=2
+## BB#9:                                ##   in Loop: Header=BB8_3 Depth=2
 	movl	-12(%rbp), %eax
 	addl	$1, %eax
 	movl	%eax, -12(%rbp)
@@ -430,16 +542,19 @@ LBB8_12:
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.globl	_main                   ## -- Begin function main
+
+	.globl	_main
 	.p2align	4, 0x90
 _main:                                  ## @main
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi28:
 	.cfi_def_cfa_offset 16
+Lcfi29:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi30:
 	.cfi_def_cfa_register %rbp
 	subq	$112, %rsp
 	movl	$0, -4(%rbp)
@@ -456,31 +571,31 @@ LBB9_1:                                 ## =>This Inner Loop Header: Depth=1
 	movl	-56(%rbp), %eax
 	cmpl	-8(%rbp), %eax
 	jge	LBB9_22
-## %bb.2:                               ##   in Loop: Header=BB9_1 Depth=1
+## BB#2:                                ##   in Loop: Header=BB9_1 Depth=1
 	xorl	%eax, %eax
 	movq	-16(%rbp), %rcx
 	movslq	-56(%rbp), %rdx
 	movq	(%rcx,%rdx,8), %rsi
-	leaq	L_.str.9(%rip), %rdi
+	leaq	L_.str.12(%rip), %rdi
 	movl	%eax, -76(%rbp)         ## 4-byte Spill
 	callq	_strcmp
 	movl	-76(%rbp), %r8d         ## 4-byte Reload
 	cmpl	%eax, %r8d
 	jne	LBB9_4
-## %bb.3:                               ##   in Loop: Header=BB9_1 Depth=1
+## BB#3:                                ##   in Loop: Header=BB9_1 Depth=1
 	movl	$1, _debug(%rip)
 LBB9_4:                                 ##   in Loop: Header=BB9_1 Depth=1
 	xorl	%eax, %eax
 	movq	-16(%rbp), %rcx
 	movslq	-56(%rbp), %rdx
 	movq	(%rcx,%rdx,8), %rsi
-	leaq	L_.str.10(%rip), %rdi
+	leaq	L_.str.13(%rip), %rdi
 	movl	%eax, -80(%rbp)         ## 4-byte Spill
 	callq	_strcmp
 	movl	-80(%rbp), %r8d         ## 4-byte Reload
 	cmpl	%eax, %r8d
 	jne	LBB9_12
-## %bb.5:                               ##   in Loop: Header=BB9_1 Depth=1
+## BB#5:                                ##   in Loop: Header=BB9_1 Depth=1
 	movq	-16(%rbp), %rax
 	movl	-56(%rbp), %ecx
 	addl	$1, %ecx
@@ -493,7 +608,7 @@ LBB9_4:                                 ##   in Loop: Header=BB9_1 Depth=1
 	addl	$2, %eax
 	cmpl	-8(%rbp), %eax
 	jl	LBB9_7
-## %bb.6:
+## BB#6:
 	jmp	LBB9_22
 LBB9_7:                                 ##   in Loop: Header=BB9_1 Depth=1
 	xorl	%eax, %eax
@@ -502,13 +617,13 @@ LBB9_7:                                 ##   in Loop: Header=BB9_1 Depth=1
 	addl	$2, %edx
 	movslq	%edx, %rsi
 	movq	(%rcx,%rsi,8), %rsi
-	leaq	L_.str.11(%rip), %rdi
+	leaq	L_.str.14(%rip), %rdi
 	movl	%eax, -84(%rbp)         ## 4-byte Spill
 	callq	_strcmp
 	movl	-84(%rbp), %edx         ## 4-byte Reload
 	cmpl	%eax, %edx
 	jne	LBB9_9
-## %bb.8:
+## BB#8:
 	jmp	LBB9_22
 LBB9_9:                                 ##   in Loop: Header=BB9_1 Depth=1
 	xorl	%eax, %eax
@@ -517,13 +632,13 @@ LBB9_9:                                 ##   in Loop: Header=BB9_1 Depth=1
 	addl	$2, %edx
 	movslq	%edx, %rsi
 	movq	(%rcx,%rsi,8), %rsi
-	leaq	L_.str.9(%rip), %rdi
+	leaq	L_.str.12(%rip), %rdi
 	movl	%eax, -88(%rbp)         ## 4-byte Spill
 	callq	_strcmp
 	movl	-88(%rbp), %edx         ## 4-byte Reload
 	cmpl	%eax, %edx
 	jne	LBB9_11
-## %bb.10:
+## BB#10:
 	jmp	LBB9_22
 LBB9_11:                                ##   in Loop: Header=BB9_1 Depth=1
 	movq	-16(%rbp), %rax
@@ -547,13 +662,13 @@ LBB9_12:                                ##   in Loop: Header=BB9_1 Depth=1
 	movq	-16(%rbp), %rcx
 	movslq	-56(%rbp), %rdx
 	movq	(%rcx,%rdx,8), %rsi
-	leaq	L_.str.11(%rip), %rdi
+	leaq	L_.str.14(%rip), %rdi
 	movl	%eax, -92(%rbp)         ## 4-byte Spill
 	callq	_strcmp
 	movl	-92(%rbp), %r8d         ## 4-byte Reload
 	cmpl	%eax, %r8d
 	jne	LBB9_20
-## %bb.13:                              ##   in Loop: Header=BB9_1 Depth=1
+## BB#13:                               ##   in Loop: Header=BB9_1 Depth=1
 	movq	-16(%rbp), %rax
 	movl	-56(%rbp), %ecx
 	addl	$1, %ecx
@@ -565,7 +680,7 @@ LBB9_12:                                ##   in Loop: Header=BB9_1 Depth=1
 	addl	$2, %eax
 	cmpl	-8(%rbp), %eax
 	jl	LBB9_15
-## %bb.14:
+## BB#14:
 	jmp	LBB9_22
 LBB9_15:                                ##   in Loop: Header=BB9_1 Depth=1
 	xorl	%eax, %eax
@@ -574,13 +689,13 @@ LBB9_15:                                ##   in Loop: Header=BB9_1 Depth=1
 	addl	$2, %edx
 	movslq	%edx, %rsi
 	movq	(%rcx,%rsi,8), %rsi
-	leaq	L_.str.10(%rip), %rdi
+	leaq	L_.str.13(%rip), %rdi
 	movl	%eax, -96(%rbp)         ## 4-byte Spill
 	callq	_strcmp
 	movl	-96(%rbp), %edx         ## 4-byte Reload
 	cmpl	%eax, %edx
 	jne	LBB9_17
-## %bb.16:
+## BB#16:
 	jmp	LBB9_22
 LBB9_17:                                ##   in Loop: Header=BB9_1 Depth=1
 	xorl	%eax, %eax
@@ -589,13 +704,13 @@ LBB9_17:                                ##   in Loop: Header=BB9_1 Depth=1
 	addl	$2, %edx
 	movslq	%edx, %rsi
 	movq	(%rcx,%rsi,8), %rsi
-	leaq	L_.str.9(%rip), %rdi
+	leaq	L_.str.12(%rip), %rdi
 	movl	%eax, -100(%rbp)        ## 4-byte Spill
 	callq	_strcmp
 	movl	-100(%rbp), %edx        ## 4-byte Reload
 	cmpl	%eax, %edx
 	jne	LBB9_19
-## %bb.18:
+## BB#18:
 	jmp	LBB9_22
 LBB9_19:                                ##   in Loop: Header=BB9_1 Depth=1
 	movq	-16(%rbp), %rax
@@ -628,11 +743,11 @@ LBB9_23:                                ## =>This Inner Loop Header: Depth=1
 	addq	%rcx, %rax
 	cmpq	$0, 8(%rax)
 	je	LBB9_26
-## %bb.24:                              ##   in Loop: Header=BB9_23 Depth=1
+## BB#24:                               ##   in Loop: Header=BB9_23 Depth=1
 	movl	-68(%rbp), %eax
 	addl	$1, %eax
 	movl	%eax, _no_version(%rip)
-## %bb.25:                              ##   in Loop: Header=BB9_23 Depth=1
+## BB#25:                               ##   in Loop: Header=BB9_23 Depth=1
 	movl	-68(%rbp), %eax
 	addl	$1, %eax
 	movl	%eax, -68(%rbp)
@@ -642,7 +757,7 @@ LBB9_26:
 	movl	%eax, %ecx
 	cmpq	-32(%rbp), %rcx
 	jne	LBB9_28
-## %bb.27:
+## BB#27:
 	movl	$1, _no_sz(%rip)
 	jmp	LBB9_29
 LBB9_28:
@@ -658,7 +773,7 @@ LBB9_29:
 	xorl	%eax, %eax
 	cmpl	-48(%rbp), %eax
 	jne	LBB9_31
-## %bb.30:
+## BB#30:
 	movl	$1, _no_ratio(%rip)
 	jmp	LBB9_32
 LBB9_31:
@@ -699,7 +814,7 @@ LBB9_33:                                ## =>This Inner Loop Header: Depth=1
 	movl	-60(%rbp), %eax
 	cmpl	_no_sz(%rip), %eax
 	jge	LBB9_36
-## %bb.34:                              ##   in Loop: Header=BB9_33 Depth=1
+## BB#34:                               ##   in Loop: Header=BB9_33 Depth=1
 	movq	_sizes@GOTPCREL(%rip), %rax
 	movq	-24(%rbp), %rcx
 	movslq	-60(%rbp), %rdx
@@ -708,7 +823,7 @@ LBB9_33:                                ## =>This Inner Loop Header: Depth=1
 	movq	(%rax), %rax
 	movslq	-60(%rbp), %rdx
 	movq	%rcx, (%rax,%rdx,8)
-## %bb.35:                              ##   in Loop: Header=BB9_33 Depth=1
+## BB#35:                               ##   in Loop: Header=BB9_33 Depth=1
 	movl	-60(%rbp), %eax
 	addl	$1, %eax
 	movl	%eax, -60(%rbp)
@@ -719,18 +834,18 @@ LBB9_37:                                ## =>This Inner Loop Header: Depth=1
 	movl	-60(%rbp), %eax
 	cmpl	_no_ratio(%rip), %eax
 	jge	LBB9_40
-## %bb.38:                              ##   in Loop: Header=BB9_37 Depth=1
+## BB#38:                               ##   in Loop: Header=BB9_37 Depth=1
 	movq	_ratios@GOTPCREL(%rip), %rax
 	movl	-44(%rbp), %ecx
 	movl	-60(%rbp), %edx
 	imull	-52(%rbp), %edx
 	addl	%edx, %ecx
-                                        ## implicit-def: %xmm0
+                                        ## implicit-def: %XMM0
 	vcvtsi2sdl	%ecx, %xmm0, %xmm0
 	movq	(%rax), %rax
 	movslq	-60(%rbp), %rsi
 	vmovsd	%xmm0, (%rax,%rsi,8)
-## %bb.39:                              ##   in Loop: Header=BB9_37 Depth=1
+## BB#39:                               ##   in Loop: Header=BB9_37 Depth=1
 	movl	-60(%rbp), %eax
 	addl	$1, %eax
 	movl	%eax, -60(%rbp)
@@ -742,18 +857,18 @@ LBB9_41:                                ## =>This Loop Header: Depth=1
 	movl	-60(%rbp), %eax
 	cmpl	_no_sz(%rip), %eax
 	jge	LBB9_48
-## %bb.42:                              ##   in Loop: Header=BB9_41 Depth=1
+## BB#42:                               ##   in Loop: Header=BB9_41 Depth=1
 	movl	$0, -64(%rbp)
 LBB9_43:                                ##   Parent Loop BB9_41 Depth=1
                                         ## =>  This Inner Loop Header: Depth=2
 	movl	-64(%rbp), %eax
 	cmpl	_no_ratio(%rip), %eax
 	jge	LBB9_46
-## %bb.44:                              ##   in Loop: Header=BB9_43 Depth=2
+## BB#44:                               ##   in Loop: Header=BB9_43 Depth=2
 	movl	-60(%rbp), %edi
 	movl	-64(%rbp), %esi
 	callq	_run
-## %bb.45:                              ##   in Loop: Header=BB9_43 Depth=2
+## BB#45:                               ##   in Loop: Header=BB9_43 Depth=2
 	movl	-64(%rbp), %eax
 	addl	$1, %eax
 	movl	%eax, -64(%rbp)
@@ -772,7 +887,7 @@ LBB9_48:
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
+
 	.globl	_debug                  ## @debug
 .zerofill __DATA,__common,_debug,4,2
 	.section	__DATA,__data
@@ -795,51 +910,60 @@ _no_version:
 	.comm	_ratios,8,3             ## @ratios
 	.section	__TEXT,__cstring,cstring_literals
 L_.str:                                 ## @.str
-	.asciz	"Before: %.40s...\n"
+	.asciz	"Before: %0.4s...\n"
 
-	.comm	_results,8,3            ## @results
 L_.str.1:                               ## @.str.1
-	.asciz	"After:  %.40s...\n"
+	.asciz	"Start Time: %f...\n"
 
 L_.str.2:                               ## @.str.2
+	.asciz	"Stop Time: %f...\n"
+
+	.comm	_results,8,3            ## @results
+L_.str.3:                               ## @.str.3
+	.asciz	"Total Time: %f...\n"
+
+L_.str.4:                               ## @.str.4
+	.asciz	"After:  %0.4s...\n"
+
+L_.str.5:                               ## @.str.5
 	.asciz	"simple"
 
-L_.str.3:                               ## @.str.3
+L_.str.6:                               ## @.str.6
 	.asciz	"optimised"
 
 	.section	__DATA,__data
 	.globl	_toupperversion         ## @toupperversion
 	.p2align	4
 _toupperversion:
-	.quad	L_.str.2
+	.quad	L_.str.5
 	.quad	_toupper_simple
-	.quad	L_.str.3
+	.quad	L_.str.6
 	.quad	_toupper_optimised
 	.space	16
 
 	.section	__TEXT,__cstring,cstring_literals
-L_.str.4:                               ## @.str.4
+L_.str.7:                               ## @.str.7
 	.asciz	"%s\n"
 
-L_.str.5:                               ## @.str.5
+L_.str.8:                               ## @.str.8
 	.asciz	"VARIANT1: gcc -lm -march=native toupper.c -O0 "
 
-L_.str.6:                               ## @.str.6
+L_.str.9:                               ## @.str.9
 	.asciz	"Size: %ld \tRatio: %f \tRunning time:"
 
-L_.str.7:                               ## @.str.7
+L_.str.10:                              ## @.str.10
 	.asciz	"\t%s: %f"
 
-L_.str.8:                               ## @.str.8
+L_.str.11:                              ## @.str.11
 	.asciz	"\n"
 
-L_.str.9:                               ## @.str.9
+L_.str.12:                              ## @.str.12
 	.asciz	"-d"
 
-L_.str.10:                              ## @.str.10
+L_.str.13:                              ## @.str.13
 	.asciz	"-l"
 
-L_.str.11:                              ## @.str.11
+L_.str.14:                              ## @.str.14
 	.asciz	"-r"
 
 

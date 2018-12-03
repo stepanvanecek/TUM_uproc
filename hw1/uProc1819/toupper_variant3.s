@@ -1,14 +1,17 @@
 	.section	__TEXT,__text,regular,pure_instructions
-	.build_version macos, 10, 14
-	.globl	_mymalloc               ## -- Begin function mymalloc
+	.macosx_version_min 10, 13
+	.globl	_mymalloc
 	.p2align	4, 0x90
 _mymalloc:                              ## @mymalloc
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi0:
 	.cfi_def_cfa_offset 16
+Lcfi1:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi2:
 	.cfi_def_cfa_register %rbp
 	addq	$32, %rdi
 	callq	_malloc
@@ -17,19 +20,23 @@ _mymalloc:                              ## @mymalloc
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.globl	_createChar             ## -- Begin function createChar
+
+	.globl	_createChar
 	.p2align	4, 0x90
 _createChar:                            ## @createChar
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi3:
 	.cfi_def_cfa_offset 16
+Lcfi4:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi5:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
 	pushq	%rax
+Lcfi6:
 	.cfi_offset %rbx, -24
 	movl	%edi, %ebx
 	callq	_rand
@@ -42,9 +49,9 @@ _createChar:                            ## @createChar
 	imull	$100, %ecx, %ecx
 	subl	%ecx, %eax
 	cmpl	%ebx, %eax
-	setge	%al
-	shlb	$5, %al
-	movzbl	%al, %ebx
+	movl	$64, %eax
+	movl	$96, %ebx
+	cmovll	%eax, %ebx
 	callq	_rand
 	cltq
 	imulq	$1321528399, %rax, %rcx ## imm = 0x4EC4EC4F
@@ -52,28 +59,28 @@ _createChar:                            ## @createChar
 	shrq	$63, %rdx
 	sarq	$35, %rcx
 	addl	%edx, %ecx
-	leal	(%rcx,%rcx,8), %edx
-	leal	(%rdx,%rdx,2), %edx
-	subl	%ecx, %edx
-	subl	%edx, %eax
-	leal	(%rbx,%rax), %eax
-	addl	$65, %eax
+	imull	$26, %ecx, %ecx
+	subl	%ecx, %eax
+	leal	1(%rbx,%rax), %eax
 	movsbl	%al, %eax
 	addq	$8, %rsp
 	popq	%rbx
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.globl	_init                   ## -- Begin function init
+
+	.globl	_init
 	.p2align	4, 0x90
 _init:                                  ## @init
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi7:
 	.cfi_def_cfa_offset 16
+Lcfi8:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi9:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -81,29 +88,30 @@ _init:                                  ## @init
 	pushq	%r12
 	pushq	%rbx
 	pushq	%rax
+Lcfi10:
 	.cfi_offset %rbx, -56
+Lcfi11:
 	.cfi_offset %r12, -48
+Lcfi12:
 	.cfi_offset %r13, -40
+Lcfi13:
 	.cfi_offset %r14, -32
+Lcfi14:
 	.cfi_offset %r15, -24
-	movl	%esi, %r12d
-	movq	%rdi, %rbx
-	leaq	33(%rbx), %rdi
+	movl	%esi, %r14d
+	movq	%rdi, %r15
+	leaq	33(%r15), %rdi
 	callq	_malloc
-	movq	%rax, %r15
-	addq	$16, %r15
-	andq	$-16, %r15
+	movq	%rax, %r12
+	addq	$16, %r12
+	andq	$-16, %r12
 	movl	$1, %edi
 	callq	_srand
-	testq	%rbx, %rbx
-	je	LBB2_1
-## %bb.2:
-	movq	%rbx, %rax
-	movq	%rax, -48(%rbp)         ## 8-byte Spill
-	movq	%rbx, %r13
-	movq	%r15, %rbx
+	xorl	%ebx, %ebx
+	testq	%r15, %r15
+	je	LBB2_2
 	.p2align	4, 0x90
-LBB2_3:                                 ## =>This Inner Loop Header: Depth=1
+LBB2_1:                                 ## =>This Inner Loop Header: Depth=1
 	callq	_rand
 	cltq
 	imulq	$1374389535, %rax, %rcx ## imm = 0x51EB851F
@@ -113,10 +121,10 @@ LBB2_3:                                 ## =>This Inner Loop Header: Depth=1
 	addl	%edx, %ecx
 	imull	$100, %ecx, %ecx
 	subl	%ecx, %eax
-	cmpl	%r12d, %eax
-	setge	%al
-	shlb	$5, %al
-	movzbl	%al, %r14d
+	cmpl	%r14d, %eax
+	movl	$96, %r13d
+	movl	$64, %eax
+	cmovll	%eax, %r13d
 	callq	_rand
 	cltq
 	imulq	$1321528399, %rax, %rcx ## imm = 0x4EC4EC4F
@@ -124,24 +132,16 @@ LBB2_3:                                 ## =>This Inner Loop Header: Depth=1
 	shrq	$63, %rdx
 	sarq	$35, %rcx
 	addl	%edx, %ecx
-	leal	(%rcx,%rcx,8), %edx
-	leal	(%rdx,%rdx,2), %edx
-	subl	%ecx, %edx
-	subl	%edx, %eax
-	leal	(%r14,%rax), %eax
-	addl	$65, %eax
-	movb	%al, (%rbx)
+	imull	$26, %ecx, %ecx
+	subl	%ecx, %eax
+	leal	1(%r13,%rax), %eax
+	movb	%al, (%r12,%rbx)
 	addq	$1, %rbx
-	addq	$-1, %r13
-	jne	LBB2_3
-## %bb.4:
-	movl	-48(%rbp), %eax         ## 4-byte Reload
-	jmp	LBB2_5
-LBB2_1:
-	xorl	%eax, %eax
-LBB2_5:
-	movb	$0, (%r15,%rax)
-	movq	%r15, %rax
+	cmpq	%r15, %rbx
+	jb	LBB2_1
+LBB2_2:
+	movb	$0, (%r12,%rbx)
+	movq	%r12, %rax
 	addq	$8, %rsp
 	popq	%rbx
 	popq	%r12
@@ -151,16 +151,19 @@ LBB2_5:
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.globl	_run_toupper            ## -- Begin function run_toupper
+
+	.globl	_run_toupper
 	.p2align	4, 0x90
 _run_toupper:                           ## @run_toupper
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi15:
 	.cfi_def_cfa_offset 16
+Lcfi16:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi17:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -168,40 +171,43 @@ _run_toupper:                           ## @run_toupper
 	pushq	%r12
 	pushq	%rbx
 	subq	$40, %rsp
+Lcfi18:
 	.cfi_offset %rbx, -56
+Lcfi19:
 	.cfi_offset %r12, -48
+Lcfi20:
 	.cfi_offset %r13, -40
+Lcfi21:
 	.cfi_offset %r14, -32
+Lcfi22:
 	.cfi_offset %r15, -24
-	movq	%rcx, -48(%rbp)         ## 8-byte Spill
-	movl	%edx, %ebx
-	imull	_no_sz(%rip), %ebx
-	addl	%edi, %ebx
-	imull	_no_ratio(%rip), %ebx
-	movl	%esi, %r14d
+	movl	%edx, %r14d
+	imull	_no_sz(%rip), %r14d
+	addl	%edi, %r14d
+	imull	_no_ratio(%rip), %r14d
+	movq	%rcx, %r12
 	movq	_sizes@GOTPCREL(%rip), %rax
 	movq	(%rax), %rax
 	movslq	%edi, %rcx
-	movq	(%rax,%rcx,8), %r13
+	movq	(%rax,%rcx,8), %rbx
 	movq	_ratios@GOTPCREL(%rip), %rax
 	movq	(%rax), %rax
-	movslq	%r14d, %rcx
+	movl	%esi, -56(%rbp)         ## 4-byte Spill
+	movslq	%esi, %rcx
 	vcvttsd2si	(%rax,%rcx,8), %r15d
-	leaq	33(%r13), %rdi
+	leaq	33(%rbx), %rdi
 	callq	_malloc
-	movq	%rax, %r12
-	addq	$16, %r12
-	andq	$-16, %r12
+	movq	%rax, %r13
+	addq	$16, %r13
+	andq	$-16, %r13
 	movl	$1, %edi
 	callq	_srand
-	testq	%r13, %r13
+	testq	%rbx, %rbx
 	je	LBB3_1
-## %bb.2:
-	movl	%r14d, -56(%rbp)        ## 4-byte Spill
-	movl	%ebx, -52(%rbp)         ## 4-byte Spill
+## BB#2:
 	movq	%r12, -64(%rbp)         ## 8-byte Spill
-	movq	%r12, %r14
-	movq	%r13, %rbx
+	movl	%r14d, -48(%rbp)        ## 4-byte Spill
+	xorl	%r12d, %r12d
 	.p2align	4, 0x90
 LBB3_3:                                 ## =>This Inner Loop Header: Depth=1
 	callq	_rand
@@ -214,9 +220,9 @@ LBB3_3:                                 ## =>This Inner Loop Header: Depth=1
 	imull	$100, %ecx, %ecx
 	subl	%ecx, %eax
 	cmpl	%r15d, %eax
-	setge	%al
-	shlb	$5, %al
-	movzbl	%al, %r12d
+	movl	$96, %r14d
+	movl	$64, %eax
+	cmovll	%eax, %r14d
 	callq	_rand
 	cltq
 	imulq	$1321528399, %rax, %rcx ## imm = 0x4EC4EC4F
@@ -224,74 +230,97 @@ LBB3_3:                                 ## =>This Inner Loop Header: Depth=1
 	shrq	$63, %rdx
 	sarq	$35, %rcx
 	addl	%edx, %ecx
-	leal	(%rcx,%rcx,8), %edx
-	leal	(%rdx,%rdx,2), %edx
-	subl	%ecx, %edx
-	subl	%edx, %eax
-	leal	(%r12,%rax), %eax
-	addl	$65, %eax
-	movb	%al, (%r14)
-	addq	$1, %r14
-	addq	$-1, %r13
+	imull	$26, %ecx, %ecx
+	subl	%ecx, %eax
+	leal	1(%r14,%rax), %eax
+	movb	%al, (%r13,%r12)
+	addq	$1, %r12
+	cmpq	%r12, %rbx
 	jne	LBB3_3
-## %bb.4:
-	movl	%ebx, %eax
+## BB#4:
+	movl	-48(%rbp), %r14d        ## 4-byte Reload
 	movq	-64(%rbp), %r12         ## 8-byte Reload
-	movl	-52(%rbp), %ebx         ## 4-byte Reload
-	movq	-48(%rbp), %r15         ## 8-byte Reload
-	movl	-56(%rbp), %r14d        ## 4-byte Reload
 	jmp	LBB3_5
 LBB3_1:
-	xorl	%eax, %eax
-	movq	-48(%rbp), %r15         ## 8-byte Reload
+	xorl	%ebx, %ebx
 LBB3_5:
-	addl	%r14d, %ebx
-	movb	$0, (%r12,%rax)
+	movb	$0, (%r13,%rbx)
 	cmpl	$0, _debug(%rip)
 	je	LBB3_7
-## %bb.6:
+## BB#6:
 	leaq	L_.str(%rip), %rdi
 	xorl	%eax, %eax
-	movq	%r12, %rsi
+	movq	%r13, %rsi
 	callq	_printf
 LBB3_7:
 	leaq	-80(%rbp), %rsi
 	xorl	%edi, %edi
 	callq	_clock_gettime
-	movabsq	$2361183241434822607, %r14 ## imm = 0x20C49BA5E353F7CF
-	movq	%r14, %rax
+	movabsq	$2361183241434822607, %rax ## imm = 0x20C49BA5E353F7CF
 	imulq	-72(%rbp)
 	movq	%rdx, %rax
 	shrq	$63, %rax
 	sarq	$7, %rdx
 	addq	%rax, %rdx
 	vcvtsi2sdq	%rdx, %xmm0, %xmm0
+	cmpl	$0, _debug(%rip)
 	vmovsd	%xmm0, -48(%rbp)        ## 8-byte Spill
-	movq	%r12, %rdi
-	callq	*%r15
+	je	LBB3_9
+## BB#8:
+	leaq	L_.str.1(%rip), %rdi
+	movb	$1, %al
+	vmovsd	-48(%rbp), %xmm0        ## 8-byte Reload
+                                        ## xmm0 = mem[0],zero
+	callq	_printf
+LBB3_9:
+	addl	-56(%rbp), %r14d        ## 4-byte Folded Reload
+	movq	%r13, %rdi
+	callq	*%r12
 	leaq	-80(%rbp), %rsi
 	xorl	%edi, %edi
 	callq	_clock_gettime
-	movq	%r14, %rax
+	movabsq	$2361183241434822607, %rax ## imm = 0x20C49BA5E353F7CF
 	imulq	-72(%rbp)
 	movq	%rdx, %rax
 	shrq	$63, %rax
 	sarq	$7, %rdx
 	addq	%rax, %rdx
 	vcvtsi2sdq	%rdx, %xmm1, %xmm0
+	cmpl	$0, _debug(%rip)
+	je	LBB3_10
+## BB#11:
+	leaq	L_.str.2(%rip), %rdi
+	movb	$1, %al
+	vmovsd	%xmm0, -56(%rbp)        ## 8-byte Spill
+	callq	_printf
+	cmpl	$0, _debug(%rip)
+	vmovsd	-56(%rbp), %xmm0        ## 8-byte Reload
+                                        ## xmm0 = mem[0],zero
 	vsubsd	-48(%rbp), %xmm0, %xmm0 ## 8-byte Folded Reload
 	movq	_results@GOTPCREL(%rip), %rax
 	movq	(%rax), %rax
-	movslq	%ebx, %rcx
+	movslq	%r14d, %rcx
 	vmovsd	%xmm0, (%rax,%rcx,8)
-	cmpl	$0, _debug(%rip)
-	je	LBB3_9
-## %bb.8:
-	leaq	L_.str.1(%rip), %rdi
-	xorl	%eax, %eax
-	movq	%r12, %rsi
+	je	LBB3_14
+## BB#12:
+	leaq	L_.str.3(%rip), %rdi
+	movb	$1, %al
 	callq	_printf
-LBB3_9:
+	cmpl	$0, _debug(%rip)
+	je	LBB3_14
+## BB#13:
+	leaq	L_.str.4(%rip), %rdi
+	xorl	%eax, %eax
+	movq	%r13, %rsi
+	callq	_printf
+	jmp	LBB3_14
+LBB3_10:
+	vsubsd	-48(%rbp), %xmm0, %xmm0 ## 8-byte Folded Reload
+	movq	_results@GOTPCREL(%rip), %rax
+	movq	(%rax), %rax
+	movslq	%r14d, %rcx
+	vmovsd	%xmm0, (%rax,%rcx,8)
+LBB3_14:
 	addq	$40, %rsp
 	popq	%rbx
 	popq	%r12
@@ -301,20 +330,23 @@ LBB3_9:
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.p2align	4, 0x90         ## -- Begin function toupper_simple
+
+	.p2align	4, 0x90
 _toupper_simple:                        ## @toupper_simple
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi23:
 	.cfi_def_cfa_offset 16
+Lcfi24:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi25:
 	.cfi_def_cfa_register %rbp
 	movb	(%rdi), %al
 	testb	%al, %al
 	je	LBB4_5
-## %bb.1:
+## BB#1:
 	addq	$1, %rdi
 	.p2align	4, 0x90
 LBB4_2:                                 ## =>This Inner Loop Header: Depth=1
@@ -322,7 +354,7 @@ LBB4_2:                                 ## =>This Inner Loop Header: Depth=1
 	addb	$-97, %cl
 	cmpb	$25, %cl
 	ja	LBB4_4
-## %bb.3:                               ##   in Loop: Header=BB4_2 Depth=1
+## BB#3:                                ##   in Loop: Header=BB4_2 Depth=1
 	addb	$-32, %al
 	movb	%al, -1(%rdi)
 LBB4_4:                                 ##   in Loop: Header=BB4_2 Depth=1
@@ -334,44 +366,75 @@ LBB4_5:
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.p2align	4, 0x90         ## -- Begin function toupper_optimised
+
+	.p2align	4, 0x90
 _toupper_optimised:                     ## @toupper_optimised
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi26:
 	.cfi_def_cfa_offset 16
+Lcfi27:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi28:
 	.cfi_def_cfa_register %rbp
+	pushq	%rbx
+Lcfi29:
+	.cfi_offset %rbx, -24
+	cmpb	$0, (%rdi)
+	je	LBB5_3
+## BB#1:
+	xorl	%ecx, %ecx
+	.p2align	4, 0x90
+LBB5_2:                                 ## =>This Inner Loop Header: Depth=1
+	movl	$1, %eax
+	movl	%ecx, %ebx
+	## InlineAsm Start
+	addl	%ebx, %eax
+
+	## InlineAsm End
+	movl	%eax, %ecx
+	movslq	%ecx, %rax
+	cmpb	$0, (%rdi,%rax)
+	jne	LBB5_2
+LBB5_3:
+	popq	%rbx
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.globl	_run                    ## -- Begin function run
+
+	.globl	_run
 	.p2align	4, 0x90
 _run:                                   ## @run
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi30:
 	.cfi_def_cfa_offset 16
+Lcfi31:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi32:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r12
 	pushq	%rbx
+Lcfi33:
 	.cfi_offset %rbx, -48
+Lcfi34:
 	.cfi_offset %r12, -40
+Lcfi35:
 	.cfi_offset %r14, -32
+Lcfi36:
 	.cfi_offset %r15, -24
 	movl	%esi, %r14d
 	movl	%edi, %r15d
 	movq	_toupperversion+8(%rip), %rcx
 	testq	%rcx, %rcx
 	je	LBB6_3
-## %bb.1:
+## BB#1:
 	xorl	%r12d, %r12d
 	leaq	_toupperversion+24(%rip), %rbx
 	.p2align	4, 0x90
@@ -393,16 +456,19 @@ LBB6_3:
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
-	.globl	_printresults           ## -- Begin function printresults
+
+	.globl	_printresults
 	.p2align	4, 0x90
 _printresults:                          ## @printresults
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi37:
 	.cfi_def_cfa_offset 16
+Lcfi38:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi39:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -410,17 +476,22 @@ _printresults:                          ## @printresults
 	pushq	%r12
 	pushq	%rbx
 	pushq	%rax
+Lcfi40:
 	.cfi_offset %rbx, -56
+Lcfi41:
 	.cfi_offset %r12, -48
+Lcfi42:
 	.cfi_offset %r13, -40
+Lcfi43:
 	.cfi_offset %r14, -32
+Lcfi44:
 	.cfi_offset %r15, -24
-	leaq	L_.str.5(%rip), %rdi
+	leaq	L_.str.8(%rip), %rdi
 	callq	_puts
 	movl	_no_sz(%rip), %ecx
 	testl	%ecx, %ecx
 	jle	LBB7_10
-## %bb.1:
+## BB#1:
 	movl	_no_ratio(%rip), %eax
 	xorl	%esi, %esi
 	.p2align	4, 0x90
@@ -429,7 +500,7 @@ LBB7_2:                                 ## =>This Loop Header: Depth=1
                                         ##       Child Loop BB7_6 Depth 3
 	testl	%eax, %eax
 	jle	LBB7_9
-## %bb.3:                               ##   in Loop: Header=BB7_2 Depth=1
+## BB#3:                                ##   in Loop: Header=BB7_2 Depth=1
 	xorl	%r13d, %r13d
 	movq	%rsi, -48(%rbp)         ## 8-byte Spill
 	.p2align	4, 0x90
@@ -443,13 +514,13 @@ LBB7_4:                                 ##   Parent Loop BB7_2 Depth=1
 	movq	(%rax), %rax
 	vmovsd	(%rax,%r13,8), %xmm0    ## xmm0 = mem[0],zero
 	movb	$1, %al
-	leaq	L_.str.6(%rip), %rdi
+	leaq	L_.str.9(%rip), %rdi
 	callq	_printf
 	cmpl	$0, _no_version(%rip)
 	movq	_results@GOTPCREL(%rip), %r15
-	leaq	L_.str.7(%rip), %rbx
+	leaq	L_.str.10(%rip), %rbx
 	jle	LBB7_7
-## %bb.5:                               ##   in Loop: Header=BB7_4 Depth=2
+## BB#5:                                ##   in Loop: Header=BB7_4 Depth=2
 	leaq	_toupperversion(%rip), %r14
 	xorl	%r12d, %r12d
 	.p2align	4, 0x90
@@ -481,7 +552,7 @@ LBB7_7:                                 ##   in Loop: Header=BB7_4 Depth=2
 	cmpq	%rax, %r13
 	movq	-48(%rbp), %rsi         ## 8-byte Reload
 	jl	LBB7_4
-## %bb.8:                               ##   in Loop: Header=BB7_2 Depth=1
+## BB#8:                                ##   in Loop: Header=BB7_2 Depth=1
 	movl	_no_sz(%rip), %ecx
 LBB7_9:                                 ##   in Loop: Header=BB7_2 Depth=1
 	addq	$1, %rsi
@@ -498,67 +569,65 @@ LBB7_10:
 	popq	%rbp
 	retq
 	.cfi_endproc
-                                        ## -- End function
+
 	.section	__TEXT,__const
-	.p2align	5               ## -- Begin function main
+	.p2align	5
 LCPI8_0:
 	.quad	0                       ## 0x0
 	.quad	1                       ## 0x1
 	.quad	2                       ## 0x2
 	.quad	3                       ## 0x3
-	.section	__TEXT,__literal8,8byte_literals
-	.p2align	3
 LCPI8_1:
 	.quad	4                       ## 0x4
+	.quad	5                       ## 0x5
+	.quad	6                       ## 0x6
+	.quad	7                       ## 0x7
 LCPI8_2:
 	.quad	8                       ## 0x8
+	.quad	9                       ## 0x9
+	.quad	10                      ## 0xa
+	.quad	11                      ## 0xb
 LCPI8_3:
 	.quad	12                      ## 0xc
+	.quad	13                      ## 0xd
+	.quad	14                      ## 0xe
+	.quad	15                      ## 0xf
 LCPI8_4:
 	.quad	16                      ## 0x10
+	.quad	17                      ## 0x11
+	.quad	18                      ## 0x12
+	.quad	19                      ## 0x13
+	.section	__TEXT,__literal8,8byte_literals
+	.p2align	3
 LCPI8_5:
-	.quad	20                      ## 0x14
+	.quad	4                       ## 0x4
 LCPI8_6:
-	.quad	24                      ## 0x18
+	.quad	8                       ## 0x8
 LCPI8_7:
-	.quad	28                      ## 0x1c
+	.quad	12                      ## 0xc
 LCPI8_8:
-	.quad	32                      ## 0x20
-	.section	__TEXT,__literal16,16byte_literals
-	.p2align	4
+	.quad	16                      ## 0x10
 LCPI8_9:
-	.long	0                       ## 0x0
-	.long	1                       ## 0x1
-	.long	2                       ## 0x2
-	.long	3                       ## 0x3
-	.section	__TEXT,__literal4,4byte_literals
-	.p2align	2
+	.quad	20                      ## 0x14
 LCPI8_10:
-	.long	4                       ## 0x4
+	.quad	24                      ## 0x18
 LCPI8_11:
-	.long	8                       ## 0x8
+	.quad	28                      ## 0x1c
 LCPI8_12:
-	.long	12                      ## 0xc
-LCPI8_13:
-	.long	16                      ## 0x10
-LCPI8_14:
-	.long	20                      ## 0x14
-LCPI8_15:
-	.long	24                      ## 0x18
-LCPI8_16:
-	.long	28                      ## 0x1c
-LCPI8_17:
-	.long	32                      ## 0x20
+	.quad	32                      ## 0x20
 	.section	__TEXT,__text,regular,pure_instructions
 	.globl	_main
 	.p2align	4, 0x90
 _main:                                  ## @main
 	.cfi_startproc
-## %bb.0:
+## BB#0:
 	pushq	%rbp
+Lcfi45:
 	.cfi_def_cfa_offset 16
+Lcfi46:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
+Lcfi47:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -567,551 +636,406 @@ _main:                                  ## @main
 	pushq	%rbx
 	andq	$-32, %rsp
 	subq	$160, %rsp
+Lcfi48:
 	.cfi_offset %rbx, -56
+Lcfi49:
 	.cfi_offset %r12, -48
+Lcfi50:
 	.cfi_offset %r13, -40
+Lcfi51:
 	.cfi_offset %r14, -32
+Lcfi52:
 	.cfi_offset %r15, -24
-	movq	%rsi, %rbx
 	xorl	%r13d, %r13d
 	cmpl	$2, %edi
-	jl	LBB8_16
-## %bb.1:
-	movl	%edi, 28(%rsp)          ## 4-byte Spill
-	movslq	%edi, %rax
-	movq	%rax, 32(%rsp)          ## 8-byte Spill
-	movl	$50, 24(%rsp)           ## 4-byte Folded Spill
+	jl	LBB8_15
+## BB#1:
+	movq	%rsi, 96(%rsp)          ## 8-byte Spill
+	movslq	%edi, %r12
+	movl	$50, 8(%rsp)            ## 4-byte Folded Spill
 	xorl	%eax, %eax
-	movq	%rax, 40(%rsp)          ## 8-byte Spill
-	movl	$1, 20(%rsp)            ## 4-byte Folded Spill
-	movl	$3, 96(%rsp)            ## 4-byte Folded Spill
-	movl	$10000, %ecx            ## imm = 0x2710
+	movq	%rax, 16(%rsp)          ## 8-byte Spill
+	movl	$1, 12(%rsp)            ## 4-byte Folded Spill
+	movl	$10000, %ebx            ## imm = 0x2710
 	movl	$800000, %r15d          ## imm = 0xC3500
-	movl	$1, %r14d
-	xorl	%r12d, %r12d
-	movq	%rbx, 64(%rsp)          ## 8-byte Spill
+	movl	$3, %r14d
+	xorl	%eax, %eax
+	movq	%rax, 24(%rsp)          ## 8-byte Spill
+	movq	%r12, 88(%rsp)          ## 8-byte Spill
 	.p2align	4, 0x90
 LBB8_2:                                 ## =>This Inner Loop Header: Depth=1
-	movq	%rcx, 8(%rsp)           ## 8-byte Spill
-	movq	(%rbx,%r14,8), %rbx
-	leaq	L_.str.9(%rip), %rdi
+	movq	%rbx, 32(%rsp)          ## 8-byte Spill
+	movq	96(%rsp), %rax          ## 8-byte Reload
+	movq	-16(%rax,%r14,8), %rbx
+	leaq	L_.str.12(%rip), %rdi
 	movq	%rbx, %rsi
 	callq	_strcmp
 	testl	%eax, %eax
 	jne	LBB8_4
-## %bb.3:                               ##   in Loop: Header=BB8_2 Depth=1
+## BB#3:                                ##   in Loop: Header=BB8_2 Depth=1
 	movl	$1, _debug(%rip)
 LBB8_4:                                 ##   in Loop: Header=BB8_2 Depth=1
-	leaq	L_.str.10(%rip), %rdi
+	leaq	L_.str.13(%rip), %rdi
 	movq	%rbx, %rsi
 	callq	_strcmp
 	testl	%eax, %eax
 	jne	LBB8_9
-## %bb.5:                               ##   in Loop: Header=BB8_2 Depth=1
-	movq	%r12, %r15
-	movq	64(%rsp), %r12          ## 8-byte Reload
-	movq	8(%r12,%r14,8), %rdi
+## BB#5:                                ##   in Loop: Header=BB8_2 Depth=1
+	movq	96(%rsp), %r12          ## 8-byte Reload
+	movq	-8(%r12,%r14,8), %rdi
 	callq	_atoi
-	cltq
-	movq	%rax, 48(%rsp)          ## 8-byte Spill
-	movl	96(%rsp), %eax          ## 4-byte Reload
-	cmpl	28(%rsp), %eax          ## 4-byte Folded Reload
-	jge	LBB8_64
-## %bb.6:                               ##   in Loop: Header=BB8_2 Depth=1
-	movq	%r15, 56(%rsp)          ## 8-byte Spill
-	movq	16(%r12,%r14,8), %r12
-	leaq	L_.str.11(%rip), %rdi
+	movslq	%eax, %r15
+	cmpq	88(%rsp), %r14          ## 8-byte Folded Reload
+	jge	LBB8_61
+## BB#6:                                ##   in Loop: Header=BB8_2 Depth=1
+	movq	(%r12,%r14,8), %r12
+	leaq	L_.str.14(%rip), %rdi
 	movq	%r12, %rsi
 	callq	_strcmp
 	testl	%eax, %eax
-	je	LBB8_66
-## %bb.7:                               ##   in Loop: Header=BB8_2 Depth=1
-	leaq	L_.str.9(%rip), %rdi
+	je	LBB8_61
+## BB#7:                                ##   in Loop: Header=BB8_2 Depth=1
+	leaq	L_.str.12(%rip), %rdi
 	movq	%r12, %rsi
 	callq	_strcmp
 	testl	%eax, %eax
-	movq	48(%rsp), %r15          ## 8-byte Reload
-	je	LBB8_67
-## %bb.8:                               ##   in Loop: Header=BB8_2 Depth=1
+	je	LBB8_61
+## BB#8:                                ##   in Loop: Header=BB8_2 Depth=1
 	movq	%r12, %rdi
 	callq	_atoi
-	movslq	%eax, %r12
-	movq	64(%rsp), %rax          ## 8-byte Reload
-	movq	24(%rax,%r14,8), %rdi
+	cltq
+	movq	%rax, 24(%rsp)          ## 8-byte Spill
+	movq	96(%rsp), %rax          ## 8-byte Reload
+	movq	8(%rax,%r14,8), %rdi
 	callq	_atoi
 	cltq
-	movq	%rax, 8(%rsp)           ## 8-byte Spill
+	movq	%rax, 32(%rsp)          ## 8-byte Spill
+	movq	88(%rsp), %r12          ## 8-byte Reload
 LBB8_9:                                 ##   in Loop: Header=BB8_2 Depth=1
-	leaq	L_.str.11(%rip), %rdi
+	leaq	L_.str.14(%rip), %rdi
 	movq	%rbx, %rsi
 	callq	_strcmp
 	testl	%eax, %eax
-	je	LBB8_11
-## %bb.10:                              ##   in Loop: Header=BB8_2 Depth=1
-	movq	8(%rsp), %rcx           ## 8-byte Reload
-	movq	64(%rsp), %rbx          ## 8-byte Reload
-	jmp	LBB8_15
-	.p2align	4, 0x90
-LBB8_11:                                ##   in Loop: Header=BB8_2 Depth=1
-	movq	64(%rsp), %rbx          ## 8-byte Reload
-	movq	8(%rbx,%r14,8), %rdi
+	jne	LBB8_14
+## BB#10:                               ##   in Loop: Header=BB8_2 Depth=1
+	movq	96(%rsp), %rbx          ## 8-byte Reload
+	movq	-8(%rbx,%r14,8), %rdi
 	callq	_atoi
-	movl	%eax, 24(%rsp)          ## 4-byte Spill
-	movl	96(%rsp), %eax          ## 4-byte Reload
-	cmpl	28(%rsp), %eax          ## 4-byte Folded Reload
-	jge	LBB8_68
-## %bb.12:                              ##   in Loop: Header=BB8_2 Depth=1
-	movq	16(%rbx,%r14,8), %rbx
-	leaq	L_.str.10(%rip), %rdi
+	movl	%eax, 8(%rsp)           ## 4-byte Spill
+	cmpq	%r12, %r14
+	jge	LBB8_61
+## BB#11:                               ##   in Loop: Header=BB8_2 Depth=1
+	movq	(%rbx,%r14,8), %rbx
+	leaq	L_.str.13(%rip), %rdi
 	movq	%rbx, %rsi
 	callq	_strcmp
 	testl	%eax, %eax
-	je	LBB8_68
-## %bb.13:                              ##   in Loop: Header=BB8_2 Depth=1
-	leaq	L_.str.9(%rip), %rdi
+	je	LBB8_61
+## BB#12:                               ##   in Loop: Header=BB8_2 Depth=1
+	leaq	L_.str.12(%rip), %rdi
 	movq	%rbx, %rsi
 	callq	_strcmp
 	testl	%eax, %eax
-	je	LBB8_68
-## %bb.14:                              ##   in Loop: Header=BB8_2 Depth=1
+	je	LBB8_61
+## BB#13:                               ##   in Loop: Header=BB8_2 Depth=1
 	movq	%rbx, %rdi
 	callq	_atoi
-                                        ## kill: def %eax killed %eax def %rax
-	movq	%rax, 40(%rsp)          ## 8-byte Spill
-	movq	64(%rsp), %rbx          ## 8-byte Reload
-	movq	24(%rbx,%r14,8), %rdi
+                                        ## kill: %EAX<def> %EAX<kill> %RAX<def>
+	movq	%rax, 16(%rsp)          ## 8-byte Spill
+	movq	96(%rsp), %rax          ## 8-byte Reload
+	movq	8(%rax,%r14,8), %rdi
 	callq	_atoi
-	movl	%eax, 20(%rsp)          ## 4-byte Spill
-	movq	8(%rsp), %rcx           ## 8-byte Reload
-LBB8_15:                                ##   in Loop: Header=BB8_2 Depth=1
-	addq	$1, %r14
-	addl	$1, 96(%rsp)            ## 4-byte Folded Spill
-	cmpq	32(%rsp), %r14          ## 8-byte Folded Reload
+	movl	%eax, 12(%rsp)          ## 4-byte Spill
+LBB8_14:                                ##   in Loop: Header=BB8_2 Depth=1
+	movq	32(%rsp), %rbx          ## 8-byte Reload
+	leaq	1(%r14), %rax
+	addq	$-1, %r14
+	cmpq	%r12, %r14
+	movq	%rax, %r14
 	jl	LBB8_2
-	jmp	LBB8_17
-LBB8_16:
-	movl	$50, 24(%rsp)           ## 4-byte Folded Spill
-	movl	$1, 20(%rsp)            ## 4-byte Folded Spill
+	jmp	LBB8_16
+LBB8_15:
+	movl	$50, 8(%rsp)            ## 4-byte Folded Spill
+	movl	$1, 12(%rsp)            ## 4-byte Folded Spill
 	movl	$800000, %r15d          ## imm = 0xC3500
-	movl	$10000, %ecx            ## imm = 0x2710
+	movl	$10000, %ebx            ## imm = 0x2710
 	movl	$0, %eax
-	movq	%rax, 40(%rsp)          ## 8-byte Spill
-	xorl	%r12d, %r12d
-LBB8_17:
+	movq	%rax, 16(%rsp)          ## 8-byte Spill
+	xorl	%eax, %eax
+	movq	%rax, 24(%rsp)          ## 8-byte Spill
+	jmp	LBB8_16
+LBB8_61:
+	movq	32(%rsp), %rbx          ## 8-byte Reload
+LBB8_16:
+	movq	24(%rsp), %rcx          ## 8-byte Reload
 	cmpq	$0, _toupperversion+8(%rip)
-	je	LBB8_21
-LBB8_18:
+	je	LBB8_20
+## BB#17:
 	xorl	%r13d, %r13d
 	leaq	_toupperversion+24(%rip), %rax
 	.p2align	4, 0x90
-LBB8_19:                                ## =>This Inner Loop Header: Depth=1
+LBB8_18:                                ## =>This Inner Loop Header: Depth=1
 	addl	$1, %r13d
 	cmpq	$0, (%rax)
 	leaq	16(%rax), %rax
-	jne	LBB8_19
-## %bb.20:
+	jne	LBB8_18
+## BB#19:
 	movl	%r13d, _no_version(%rip)
-LBB8_21:
+LBB8_20:
 	movl	$1, %r14d
-	movl	$1, %esi
-	testq	%r12, %r12
-	je	LBB8_26
-## %bb.22:
-	subq	%r15, %r12
-	movq	%r12, %rax
-	orq	%rcx, %rax
+	movl	$1, %r12d
+	testq	%rcx, %rcx
+	movq	16(%rsp), %rax          ## 8-byte Reload
+	je	LBB8_25
+## BB#21:
+	subq	%r15, %rcx
+	movq	%rcx, %rax
+	orq	%rbx, %rax
 	shrq	$32, %rax
-	je	LBB8_24
-## %bb.23:
+	movq	%rcx, %rax
+	je	LBB8_23
+## BB#22:
 	xorl	%edx, %edx
-	movq	%r12, %rax
-	divq	%rcx
-	movq	%rax, %rsi
-	jmp	LBB8_25
+	divq	%rbx
+	movq	%rax, %r12
+	jmp	LBB8_24
+LBB8_23:
+	xorl	%edx, %edx
+                                        ## kill: %EAX<def> %EAX<kill> %RAX<kill>
+	divl	%ebx
+	movl	%eax, %r12d
 LBB8_24:
-	xorl	%edx, %edx
-	movl	%r12d, %eax
-	divl	%ecx
-	movl	%eax, %esi
+	movq	16(%rsp), %rax          ## 8-byte Reload
+	addl	$1, %r12d
 LBB8_25:
-	addl	$1, %esi
-LBB8_26:
-	movq	%rcx, 8(%rsp)           ## 8-byte Spill
-	movl	%esi, _no_sz(%rip)
-	movq	40(%rsp), %rax          ## 8-byte Reload
+	movl	%r12d, _no_sz(%rip)
 	testl	%eax, %eax
-	je	LBB8_28
-## %bb.27:
-	subl	24(%rsp), %eax          ## 4-byte Folded Reload
-                                        ## kill: def %eax killed %eax killed %rax
+	je	LBB8_27
+## BB#26:
+	subl	8(%rsp), %eax           ## 4-byte Folded Reload
+                                        ## kill: %EAX<def> %EAX<kill> %RAX<kill>
 	cltd
-	idivl	20(%rsp)                ## 4-byte Folded Reload
+	idivl	12(%rsp)                ## 4-byte Folded Reload
 	movl	%eax, %r14d
 	addl	$1, %r14d
-LBB8_28:
+LBB8_27:
 	movl	%r14d, _no_ratio(%rip)
-	imull	%esi, %r13d
 	imull	%r14d, %r13d
+	imull	%r12d, %r13d
 	shlq	$3, %r13
 	movq	%r13, %rdi
-	movq	%rsi, 32(%rsp)          ## 8-byte Spill
 	callq	_malloc
 	movq	_results@GOTPCREL(%rip), %rcx
 	movq	%rax, (%rcx)
-	movl	%r14d, %ebx
-	leaq	(,%rbx,8), %rdi
+	movl	%r14d, %edi
+	shlq	$3, %rdi
 	callq	_malloc
 	movq	%rax, %r13
 	movq	_ratios@GOTPCREL(%rip), %rax
 	movq	%r13, (%rax)
-	movl	32(%rsp), %r12d         ## 4-byte Reload
-	leaq	(,%r12,8), %rdi
+	movl	%r12d, %edi
+	shlq	$3, %rdi
 	callq	_malloc
-	movq	32(%rsp), %r9           ## 8-byte Reload
 	movq	_sizes@GOTPCREL(%rip), %rcx
 	movq	%rax, (%rcx)
-	testl	%r9d, %r9d
-	movq	8(%rsp), %rsi           ## 8-byte Reload
-	jle	LBB8_39
-## %bb.29:
-	cmpl	$16, %r9d
-	jae	LBB8_31
-## %bb.30:
-	xorl	%ecx, %ecx
-	jmp	LBB8_37
-LBB8_31:
-	movl	%r12d, %ecx
-	andl	$-16, %ecx
-	vmovq	%rsi, %xmm0
-	vpbroadcastq	%xmm0, %ymm1
-	vmovq	%r15, %xmm0
+	testl	%r12d, %r12d
+	jle	LBB8_35
+## BB#28:
+	movslq	%r12d, %rcx
+	cmpl	$15, %r12d
+	jbe	LBB8_32
+## BB#29:
+	movq	%rcx, %rdx
+	andq	$-16, %rdx
+	je	LBB8_32
+## BB#30:
+	vmovq	%rbx, %xmm0
 	vpbroadcastq	%xmm0, %ymm0
-	leaq	-16(%rcx), %rdi
-	movq	%rdi, %rdx
-	shrq	$4, %rdx
-	leal	1(%rdx), %r8d
-	andl	$1, %r8d
-	testq	%rdi, %rdi
-	je	LBB8_62
-## %bb.32:
-	leaq	-1(%r8), %rdi
-	subq	%rdx, %rdi
+	vmovq	%r15, %xmm1
+	vpbroadcastq	%xmm1, %ymm1
+	leaq	-16(%rdx), %rdi
+	movq	%rdi, %rsi
+	shrq	$4, %rsi
 	vmovdqa	LCPI8_0(%rip), %ymm2    ## ymm2 = [0,1,2,3]
-	xorl	%edx, %edx
-	vbroadcastsd	LCPI8_1(%rip), %ymm3 ## ymm3 = [4,4,4,4]
-	vmovaps	%ymm3, 64(%rsp)         ## 32-byte Spill
-	vpbroadcastq	LCPI8_2(%rip), %ymm3 ## ymm3 = [8,8,8,8]
-	vmovdqa	%ymm3, 96(%rsp)         ## 32-byte Spill
-	vpbroadcastq	LCPI8_3(%rip), %ymm5 ## ymm5 = [12,12,12,12]
-	vpsrlq	$32, %ymm1, %ymm6
-	vpbroadcastq	LCPI8_4(%rip), %ymm7 ## ymm7 = [16,16,16,16]
-	vpbroadcastq	LCPI8_5(%rip), %ymm8 ## ymm8 = [20,20,20,20]
-	vpbroadcastq	LCPI8_6(%rip), %ymm9 ## ymm9 = [24,24,24,24]
-	vpbroadcastq	LCPI8_7(%rip), %ymm10 ## ymm10 = [28,28,28,28]
-	vpbroadcastq	LCPI8_8(%rip), %ymm11 ## ymm11 = [32,32,32,32]
-	.p2align	4, 0x90
-LBB8_33:                                ## =>This Inner Loop Header: Depth=1
-	vpaddq	64(%rsp), %ymm2, %ymm12 ## 32-byte Folded Reload
-	vpaddq	96(%rsp), %ymm2, %ymm13 ## 32-byte Folded Reload
-	vpaddq	%ymm5, %ymm2, %ymm14
-	vpmuludq	%ymm2, %ymm6, %ymm15
-	vpsrlq	$32, %ymm2, %ymm3
-	vpmuludq	%ymm3, %ymm1, %ymm3
-	vpaddq	%ymm15, %ymm3, %ymm3
+	btl	$4, %edi
+	jb	LBB8_56
+## BB#31:
+	vpmuludq	%ymm2, %ymm0, %ymm3
+	vpsrlq	$32, %ymm0, %ymm4
+	vpmuludq	%ymm2, %ymm4, %ymm2
+	vpsllq	$32, %ymm2, %ymm2
+	vpaddq	%ymm2, %ymm3, %ymm2
+	vmovdqa	LCPI8_1(%rip), %ymm3    ## ymm3 = [4,5,6,7]
+	vpmuludq	%ymm3, %ymm0, %ymm5
+	vpmuludq	%ymm3, %ymm4, %ymm3
 	vpsllq	$32, %ymm3, %ymm3
-	vpmuludq	%ymm2, %ymm1, %ymm15
-	vpaddq	%ymm3, %ymm15, %ymm3
-	vpmuludq	%ymm12, %ymm6, %ymm15
-	vpsrlq	$32, %ymm12, %ymm4
-	vpmuludq	%ymm4, %ymm1, %ymm4
-	vpaddq	%ymm15, %ymm4, %ymm4
+	vpaddq	%ymm3, %ymm5, %ymm3
+	vmovdqa	LCPI8_2(%rip), %ymm5    ## ymm5 = [8,9,10,11]
+	vpmuludq	%ymm5, %ymm0, %ymm6
+	vpmuludq	%ymm5, %ymm4, %ymm5
+	vpsllq	$32, %ymm5, %ymm5
+	vpaddq	%ymm5, %ymm6, %ymm5
+	vmovdqa	LCPI8_3(%rip), %ymm6    ## ymm6 = [12,13,14,15]
+	vpmuludq	%ymm6, %ymm0, %ymm7
+	vpmuludq	%ymm6, %ymm4, %ymm4
 	vpsllq	$32, %ymm4, %ymm4
-	vpmuludq	%ymm12, %ymm1, %ymm12
-	vpaddq	%ymm4, %ymm12, %ymm4
-	vpmuludq	%ymm13, %ymm6, %ymm12
-	vpsrlq	$32, %ymm13, %ymm15
-	vpmuludq	%ymm15, %ymm1, %ymm15
-	vpaddq	%ymm12, %ymm15, %ymm12
-	vpsllq	$32, %ymm12, %ymm12
-	vpmuludq	%ymm13, %ymm1, %ymm13
-	vpaddq	%ymm12, %ymm13, %ymm12
-	vpmuludq	%ymm14, %ymm6, %ymm13
-	vpsrlq	$32, %ymm14, %ymm15
-	vpmuludq	%ymm15, %ymm1, %ymm15
-	vpaddq	%ymm13, %ymm15, %ymm13
-	vpsllq	$32, %ymm13, %ymm13
-	vpmuludq	%ymm14, %ymm1, %ymm14
-	vpaddq	%ymm13, %ymm14, %ymm13
-	vpaddq	%ymm0, %ymm3, %ymm3
-	vpaddq	%ymm0, %ymm4, %ymm4
-	vpaddq	%ymm0, %ymm12, %ymm12
-	vpaddq	%ymm0, %ymm13, %ymm13
-	vmovdqu	%ymm3, (%rax,%rdx,8)
-	vmovdqu	%ymm4, 32(%rax,%rdx,8)
-	vmovdqu	%ymm12, 64(%rax,%rdx,8)
-	vmovdqu	%ymm13, 96(%rax,%rdx,8)
-	vpaddq	%ymm7, %ymm2, %ymm3
-	vpaddq	%ymm8, %ymm2, %ymm4
-	vpaddq	%ymm9, %ymm2, %ymm13
-	vpaddq	%ymm10, %ymm2, %ymm12
-	vpmuludq	%ymm3, %ymm6, %ymm14
-	vpsrlq	$32, %ymm3, %ymm15
-	vpmuludq	%ymm15, %ymm1, %ymm15
-	vpaddq	%ymm14, %ymm15, %ymm14
-	vpsllq	$32, %ymm14, %ymm14
-	vpmuludq	%ymm3, %ymm1, %ymm3
-	vpaddq	%ymm14, %ymm3, %ymm3
-	vpmuludq	%ymm4, %ymm6, %ymm14
-	vpsrlq	$32, %ymm4, %ymm15
-	vpmuludq	%ymm15, %ymm1, %ymm15
-	vpaddq	%ymm14, %ymm15, %ymm14
-	vpsllq	$32, %ymm14, %ymm14
-	vpmuludq	%ymm4, %ymm1, %ymm4
-	vpaddq	%ymm14, %ymm4, %ymm4
-	vpmuludq	%ymm13, %ymm6, %ymm14
-	vpsrlq	$32, %ymm13, %ymm15
-	vpmuludq	%ymm15, %ymm1, %ymm15
-	vpaddq	%ymm14, %ymm15, %ymm14
-	vpsllq	$32, %ymm14, %ymm14
-	vpmuludq	%ymm13, %ymm1, %ymm13
-	vpaddq	%ymm14, %ymm13, %ymm13
-	vpmuludq	%ymm12, %ymm6, %ymm14
-	vpsrlq	$32, %ymm12, %ymm15
-	vpmuludq	%ymm15, %ymm1, %ymm15
-	vpaddq	%ymm14, %ymm15, %ymm14
-	vpaddq	%ymm0, %ymm3, %ymm3
-	vmovdqu	%ymm3, 128(%rax,%rdx,8)
-	vpaddq	%ymm0, %ymm4, %ymm3
-	vmovdqu	%ymm3, 160(%rax,%rdx,8)
-	vpaddq	%ymm0, %ymm13, %ymm3
-	vmovdqu	%ymm3, 192(%rax,%rdx,8)
-	vpsllq	$32, %ymm14, %ymm3
-	vpmuludq	%ymm12, %ymm1, %ymm4
-	vpaddq	%ymm3, %ymm4, %ymm3
-	vpaddq	%ymm0, %ymm3, %ymm3
-	vmovdqu	%ymm3, 224(%rax,%rdx,8)
-	addq	$32, %rdx
-	vpaddq	%ymm11, %ymm2, %ymm2
-	addq	$2, %rdi
-	jne	LBB8_33
-## %bb.34:
-	testq	%r8, %r8
-	je	LBB8_36
-LBB8_35:
-	vpbroadcastq	LCPI8_1(%rip), %ymm3 ## ymm3 = [4,4,4,4]
-	vpaddq	%ymm3, %ymm2, %ymm3
-	vpbroadcastq	LCPI8_2(%rip), %ymm4 ## ymm4 = [8,8,8,8]
-	vpaddq	%ymm4, %ymm2, %ymm4
-	vpbroadcastq	LCPI8_3(%rip), %ymm5 ## ymm5 = [12,12,12,12]
-	vpaddq	%ymm5, %ymm2, %ymm5
-	vpsrlq	$32, %ymm1, %ymm6
-	vpmuludq	%ymm2, %ymm6, %ymm7
-	vpsrlq	$32, %ymm2, %ymm8
-	vpmuludq	%ymm8, %ymm1, %ymm8
-	vpaddq	%ymm7, %ymm8, %ymm7
-	vpsllq	$32, %ymm7, %ymm7
-	vpmuludq	%ymm2, %ymm1, %ymm2
-	vpaddq	%ymm7, %ymm2, %ymm2
-	vpmuludq	%ymm3, %ymm6, %ymm7
-	vpsrlq	$32, %ymm3, %ymm8
-	vpmuludq	%ymm8, %ymm1, %ymm8
-	vpaddq	%ymm7, %ymm8, %ymm7
-	vpsllq	$32, %ymm7, %ymm7
-	vpmuludq	%ymm3, %ymm1, %ymm3
-	vpaddq	%ymm7, %ymm3, %ymm3
-	vpmuludq	%ymm4, %ymm6, %ymm7
-	vpsrlq	$32, %ymm4, %ymm8
-	vpmuludq	%ymm8, %ymm1, %ymm8
-	vpaddq	%ymm7, %ymm8, %ymm7
-	vpsllq	$32, %ymm7, %ymm7
-	vpmuludq	%ymm4, %ymm1, %ymm4
-	vpaddq	%ymm7, %ymm4, %ymm4
-	vpmuludq	%ymm5, %ymm6, %ymm6
-	vpsrlq	$32, %ymm5, %ymm7
-	vpmuludq	%ymm7, %ymm1, %ymm7
-	vpaddq	%ymm6, %ymm7, %ymm6
-	vpsllq	$32, %ymm6, %ymm6
-	vpmuludq	%ymm5, %ymm1, %ymm1
-	vpaddq	%ymm6, %ymm1, %ymm1
-	vpaddq	%ymm0, %ymm2, %ymm2
-	vpaddq	%ymm0, %ymm3, %ymm3
-	vpaddq	%ymm0, %ymm4, %ymm4
-	vpaddq	%ymm0, %ymm1, %ymm0
-	vmovdqu	%ymm2, (%rax,%rdx,8)
-	vmovdqu	%ymm3, 32(%rax,%rdx,8)
-	vmovdqu	%ymm4, 64(%rax,%rdx,8)
-	vmovdqu	%ymm0, 96(%rax,%rdx,8)
-LBB8_36:
-	cmpq	%r12, %rcx
-	je	LBB8_39
-LBB8_37:
-	leaq	(%rax,%rcx,8), %rax
-	movq	%rsi, %rdx
-	imulq	%rcx, %rdx
-	addq	%rdx, %r15
-	subq	%rcx, %r12
-	.p2align	4, 0x90
-LBB8_38:                                ## =>This Inner Loop Header: Depth=1
-	movq	%r15, (%rax)
-	addq	$8, %rax
-	addq	%rsi, %r15
-	addq	$-1, %r12
-	jne	LBB8_38
-LBB8_39:
-	testl	%r14d, %r14d
-	movl	24(%rsp), %edi          ## 4-byte Reload
-	movl	20(%rsp), %eax          ## 4-byte Reload
-	jle	LBB8_50
-## %bb.40:
-	cmpl	$16, %r14d
-	jae	LBB8_42
-## %bb.41:
-	xorl	%r8d, %r8d
-	jmp	LBB8_48
-LBB8_42:
-	movl	%ebx, %r8d
-	andl	$-16, %r8d
-	vmovd	%eax, %xmm0
-	vpbroadcastd	%xmm0, %xmm1
-	vmovd	%edi, %xmm0
-	vpbroadcastd	%xmm0, %xmm0
-	leaq	-16(%r8), %rsi
-	movq	%rsi, %rcx
-	shrq	$4, %rcx
-	leal	1(%rcx), %edx
-	andl	$1, %edx
+	vpaddq	%ymm4, %ymm7, %ymm4
+	vpaddq	%ymm1, %ymm2, %ymm2
+	vpaddq	%ymm1, %ymm3, %ymm3
+	vpaddq	%ymm1, %ymm5, %ymm5
+	vpaddq	%ymm1, %ymm4, %ymm4
+	vmovdqu	%ymm2, (%rax)
+	vmovdqu	%ymm3, 32(%rax)
+	vmovdqu	%ymm5, 64(%rax)
+	vmovdqu	%ymm4, 96(%rax)
+	vmovdqa	LCPI8_4(%rip), %ymm2    ## ymm2 = [16,17,18,19]
+	movl	$16, %edi
 	testq	%rsi, %rsi
-	je	LBB8_63
-## %bb.43:
-	leaq	-1(%rdx), %rsi
-	subq	%rcx, %rsi
-	vmovdqa	LCPI8_9(%rip), %xmm2    ## xmm2 = [0,1,2,3]
-	xorl	%ecx, %ecx
-	vpbroadcastd	LCPI8_10(%rip), %xmm8 ## xmm8 = [4,4,4,4]
-	vpbroadcastd	LCPI8_11(%rip), %xmm9 ## xmm9 = [8,8,8,8]
-	vpbroadcastd	LCPI8_12(%rip), %xmm10 ## xmm10 = [12,12,12,12]
-	vpbroadcastd	LCPI8_13(%rip), %xmm11 ## xmm11 = [16,16,16,16]
-	vpbroadcastd	LCPI8_14(%rip), %xmm12 ## xmm12 = [20,20,20,20]
-	vpbroadcastd	LCPI8_15(%rip), %xmm13 ## xmm13 = [24,24,24,24]
-	vpbroadcastd	LCPI8_16(%rip), %xmm14 ## xmm14 = [28,28,28,28]
-	vpbroadcastd	LCPI8_17(%rip), %xmm5 ## xmm5 = [32,32,32,32]
+	jne	LBB8_57
+	jmp	LBB8_59
+LBB8_32:
+	xorl	%edx, %edx
+LBB8_33:
+	movq	%rdx, %rsi
+	imulq	%rbx, %rsi
+	addq	%rsi, %r15
 	.p2align	4, 0x90
-LBB8_44:                                ## =>This Inner Loop Header: Depth=1
-	vpaddd	%xmm8, %xmm2, %xmm6
-	vpaddd	%xmm9, %xmm2, %xmm7
-	vpaddd	%xmm10, %xmm2, %xmm3
-	vpmulld	%xmm2, %xmm1, %xmm4
-	vpmulld	%xmm6, %xmm1, %xmm6
-	vpmulld	%xmm7, %xmm1, %xmm7
-	vpmulld	%xmm3, %xmm1, %xmm3
-	vpaddd	%xmm0, %xmm4, %xmm4
-	vpaddd	%xmm0, %xmm6, %xmm6
-	vpaddd	%xmm0, %xmm7, %xmm7
-	vpaddd	%xmm0, %xmm3, %xmm3
-	vcvtdq2pd	%xmm4, %ymm4
-	vcvtdq2pd	%xmm6, %ymm6
-	vcvtdq2pd	%xmm7, %ymm7
-	vcvtdq2pd	%xmm3, %ymm3
-	vmovups	%ymm4, (%r13,%rcx,8)
-	vmovups	%ymm6, 32(%r13,%rcx,8)
-	vmovups	%ymm7, 64(%r13,%rcx,8)
-	vmovups	%ymm3, 96(%r13,%rcx,8)
-	vpaddd	%xmm11, %xmm2, %xmm3
-	vpaddd	%xmm12, %xmm2, %xmm4
-	vpaddd	%xmm13, %xmm2, %xmm6
-	vpaddd	%xmm14, %xmm2, %xmm7
-	vpmulld	%xmm3, %xmm1, %xmm3
-	vpmulld	%xmm4, %xmm1, %xmm4
-	vpmulld	%xmm6, %xmm1, %xmm6
-	vpmulld	%xmm7, %xmm1, %xmm7
-	vpaddd	%xmm0, %xmm3, %xmm3
-	vpaddd	%xmm0, %xmm4, %xmm4
-	vpaddd	%xmm0, %xmm6, %xmm6
-	vpaddd	%xmm0, %xmm7, %xmm7
-	vcvtdq2pd	%xmm3, %ymm3
-	vcvtdq2pd	%xmm4, %ymm4
-	vcvtdq2pd	%xmm6, %ymm6
-	vcvtdq2pd	%xmm7, %ymm7
-	vmovdqu	%ymm3, 128(%r13,%rcx,8)
-	vmovdqu	%ymm4, 160(%r13,%rcx,8)
-	vmovdqu	%ymm6, 192(%r13,%rcx,8)
-	vmovdqu	%ymm7, 224(%r13,%rcx,8)
-	addq	$32, %rcx
-	vpaddd	%xmm5, %xmm2, %xmm2
-	addq	$2, %rsi
-	jne	LBB8_44
-## %bb.45:
-	testq	%rdx, %rdx
-	je	LBB8_47
-LBB8_46:
-	vpbroadcastd	LCPI8_10(%rip), %xmm3 ## xmm3 = [4,4,4,4]
-	vpaddd	%xmm3, %xmm2, %xmm3
-	vpbroadcastd	LCPI8_11(%rip), %xmm4 ## xmm4 = [8,8,8,8]
-	vpaddd	%xmm4, %xmm2, %xmm4
-	vpbroadcastd	LCPI8_12(%rip), %xmm5 ## xmm5 = [12,12,12,12]
-	vpaddd	%xmm5, %xmm2, %xmm5
-	vpmulld	%xmm2, %xmm1, %xmm2
-	vpmulld	%xmm3, %xmm1, %xmm3
-	vpmulld	%xmm4, %xmm1, %xmm4
-	vpmulld	%xmm5, %xmm1, %xmm1
-	vpaddd	%xmm0, %xmm2, %xmm2
-	vpaddd	%xmm0, %xmm3, %xmm3
-	vpaddd	%xmm0, %xmm4, %xmm4
-	vpaddd	%xmm0, %xmm1, %xmm0
-	vcvtdq2pd	%xmm2, %ymm1
-	vcvtdq2pd	%xmm3, %ymm2
-	vcvtdq2pd	%xmm4, %ymm3
-	vcvtdq2pd	%xmm0, %ymm0
-	vmovdqu	%ymm1, (%r13,%rcx,8)
-	vmovdqu	%ymm2, 32(%r13,%rcx,8)
-	vmovdqu	%ymm3, 64(%r13,%rcx,8)
-	vmovdqu	%ymm0, 96(%r13,%rcx,8)
-LBB8_47:
-	cmpq	%rbx, %r8
-	je	LBB8_50
-LBB8_48:
-	leaq	(,%r8,8), %rcx
-	addq	%r13, %rcx
-	movl	%eax, %edx
-	imull	%r8d, %edx
-	addl	%edx, %edi
-	subq	%r8, %rbx
+LBB8_34:                                ## =>This Inner Loop Header: Depth=1
+	movq	%r15, (%rax,%rdx,8)
+	addq	$1, %rdx
+	addq	%rbx, %r15
+	cmpq	%rcx, %rdx
+	jl	LBB8_34
+LBB8_35:
+	testl	%r14d, %r14d
+	movl	12(%rsp), %ebx          ## 4-byte Reload
+	jle	LBB8_44
+## BB#36:
+	movl	8(%rsp), %eax           ## 4-byte Reload
+	movslq	%r14d, %rcx
+	cmpl	$15, %r14d
+	jbe	LBB8_41
+## BB#37:
+	movq	%rcx, %rdx
+	andq	$-16, %rdx
+	je	LBB8_41
+## BB#38:
+	movslq	%ebx, %rsi
+	vmovq	%rsi, %xmm0
+	vpbroadcastq	%xmm0, %ymm0
+	vmovq	%rax, %xmm1
+	vpbroadcastq	%xmm1, %ymm1
+	leaq	96(%r13), %rsi
+	vmovdqa	LCPI8_0(%rip), %ymm2    ## ymm2 = [0,1,2,3]
+	vpbroadcastq	LCPI8_5(%rip), %ymm3
+	vpbroadcastq	LCPI8_6(%rip), %ymm4
+	vpbroadcastq	LCPI8_7(%rip), %ymm5
+	vpsrlq	$32, %ymm0, %ymm6
+	vpbroadcastq	LCPI8_8(%rip), %ymm7
+	movq	%rdx, %rdi
 	.p2align	4, 0x90
-LBB8_49:                                ## =>This Inner Loop Header: Depth=1
-	vxorps	%xmm9, %xmm9, %xmm9
-	vcvtsi2sdl	%edi, %xmm9, %xmm0
-	vmovq	%xmm0, (%rcx)
-	addq	$8, %rcx
-	addl	%eax, %edi
-	addq	$-1, %rbx
-	jne	LBB8_49
-LBB8_50:
-	testl	%r9d, %r9d
-	jle	LBB8_61
-## %bb.51:
+LBB8_39:                                ## =>This Inner Loop Header: Depth=1
+	vpaddq	%ymm3, %ymm2, %ymm8
+	vpaddq	%ymm4, %ymm2, %ymm9
+	vpaddq	%ymm5, %ymm2, %ymm10
+	vpsrlq	$32, %ymm2, %ymm11
+	vpmuludq	%ymm0, %ymm11, %ymm11
+	vpmuludq	%ymm6, %ymm2, %ymm12
+	vpaddq	%ymm11, %ymm12, %ymm11
+	vpsllq	$32, %ymm11, %ymm11
+	vpmuludq	%ymm0, %ymm2, %ymm12
+	vpaddq	%ymm11, %ymm12, %ymm11
+	vpmuludq	%ymm6, %ymm8, %ymm12
+	vpsrlq	$32, %ymm8, %ymm13
+	vpmuludq	%ymm0, %ymm13, %ymm13
+	vpaddq	%ymm13, %ymm12, %ymm12
+	vpsllq	$32, %ymm12, %ymm12
+	vpmuludq	%ymm0, %ymm8, %ymm8
+	vpaddq	%ymm12, %ymm8, %ymm8
+	vpmuludq	%ymm6, %ymm9, %ymm12
+	vpsrlq	$32, %ymm9, %ymm13
+	vpmuludq	%ymm0, %ymm13, %ymm13
+	vpaddq	%ymm13, %ymm12, %ymm12
+	vpsllq	$32, %ymm12, %ymm12
+	vpmuludq	%ymm0, %ymm9, %ymm9
+	vpaddq	%ymm12, %ymm9, %ymm9
+	vpmuludq	%ymm6, %ymm10, %ymm12
+	vpsrlq	$32, %ymm10, %ymm13
+	vpmuludq	%ymm0, %ymm13, %ymm13
+	vpaddq	%ymm13, %ymm12, %ymm12
+	vpsllq	$32, %ymm12, %ymm12
+	vpmuludq	%ymm0, %ymm10, %ymm10
+	vpaddq	%ymm12, %ymm10, %ymm10
+	vpaddq	%ymm1, %ymm11, %ymm11
+	vpaddq	%ymm1, %ymm8, %ymm8
+	vpaddq	%ymm1, %ymm9, %ymm9
+	vpaddq	%ymm1, %ymm10, %ymm10
+	vpshufd	$232, %ymm11, %ymm11    ## ymm11 = ymm11[0,2,2,3,4,6,6,7]
+	vpermq	$232, %ymm11, %ymm11    ## ymm11 = ymm11[0,2,2,3]
+	vpshufd	$232, %ymm8, %ymm8      ## ymm8 = ymm8[0,2,2,3,4,6,6,7]
+	vpermq	$232, %ymm8, %ymm8      ## ymm8 = ymm8[0,2,2,3]
+	vpshufd	$232, %ymm9, %ymm9      ## ymm9 = ymm9[0,2,2,3,4,6,6,7]
+	vpermq	$232, %ymm9, %ymm9      ## ymm9 = ymm9[0,2,2,3]
+	vpshufd	$232, %ymm10, %ymm10    ## ymm10 = ymm10[0,2,2,3,4,6,6,7]
+	vpermq	$232, %ymm10, %ymm10    ## ymm10 = ymm10[0,2,2,3]
+	vcvtdq2pd	%xmm11, %ymm11
+	vcvtdq2pd	%xmm8, %ymm8
+	vcvtdq2pd	%xmm9, %ymm9
+	vcvtdq2pd	%xmm10, %ymm10
+	vmovdqu	%ymm11, -96(%rsi)
+	vmovdqu	%ymm8, -64(%rsi)
+	vmovdqu	%ymm9, -32(%rsi)
+	vmovdqu	%ymm10, (%rsi)
+	vpaddq	%ymm7, %ymm2, %ymm2
+	subq	$-128, %rsi
+	addq	$-16, %rdi
+	jne	LBB8_39
+## BB#40:
+	cmpq	%rdx, %rcx
+	jne	LBB8_42
+	jmp	LBB8_44
+LBB8_41:
+	xorl	%edx, %edx
+LBB8_42:
+	movl	%edx, %esi
+	imull	%ebx, %esi
+	addl	%esi, %eax
+	.p2align	4, 0x90
+LBB8_43:                                ## =>This Inner Loop Header: Depth=1
+	vxorps	%xmm12, %xmm12, %xmm12
+	vcvtsi2sdl	%eax, %xmm12, %xmm0
+	vmovsd	%xmm0, (%r13,%rdx,8)
+	addq	$1, %rdx
+	addl	%ebx, %eax
+	cmpq	%rcx, %rdx
+	jl	LBB8_43
+LBB8_44:
+	testl	%r12d, %r12d
+	jle	LBB8_55
+## BB#45:
 	xorl	%r15d, %r15d
 	leaq	_toupperversion+24(%rip), %r13
 	.p2align	4, 0x90
-LBB8_52:                                ## =>This Loop Header: Depth=1
-                                        ##     Child Loop BB8_54 Depth 2
-                                        ##       Child Loop BB8_56 Depth 3
+LBB8_46:                                ## =>This Loop Header: Depth=1
+                                        ##     Child Loop BB8_48 Depth 2
+                                        ##       Child Loop BB8_50 Depth 3
 	testl	%r14d, %r14d
-	jle	LBB8_60
-## %bb.53:                              ##   in Loop: Header=BB8_52 Depth=1
+	jle	LBB8_54
+## BB#47:                               ##   in Loop: Header=BB8_46 Depth=1
 	xorl	%r12d, %r12d
 	.p2align	4, 0x90
-LBB8_54:                                ##   Parent Loop BB8_52 Depth=1
+LBB8_48:                                ##   Parent Loop BB8_46 Depth=1
                                         ## =>  This Loop Header: Depth=2
-                                        ##       Child Loop BB8_56 Depth 3
+                                        ##       Child Loop BB8_50 Depth 3
 	movq	_toupperversion+8(%rip), %rcx
 	testq	%rcx, %rcx
-	je	LBB8_58
-## %bb.55:                              ##   in Loop: Header=BB8_54 Depth=2
+	je	LBB8_52
+## BB#49:                               ##   in Loop: Header=BB8_48 Depth=2
 	xorl	%r14d, %r14d
 	movq	%r13, %rbx
 	.p2align	4, 0x90
-LBB8_56:                                ##   Parent Loop BB8_52 Depth=1
-                                        ##     Parent Loop BB8_54 Depth=2
+LBB8_50:                                ##   Parent Loop BB8_46 Depth=1
+                                        ##     Parent Loop BB8_48 Depth=2
                                         ## =>    This Inner Loop Header: Depth=3
 	movl	%r15d, %edi
 	movl	%r12d, %esi
@@ -1122,20 +1046,20 @@ LBB8_56:                                ##   Parent Loop BB8_52 Depth=1
 	addq	$16, %rbx
 	addl	$1, %r14d
 	testq	%rcx, %rcx
-	jne	LBB8_56
-## %bb.57:                              ##   in Loop: Header=BB8_54 Depth=2
+	jne	LBB8_50
+## BB#51:                               ##   in Loop: Header=BB8_48 Depth=2
 	movl	_no_ratio(%rip), %r14d
-LBB8_58:                                ##   in Loop: Header=BB8_54 Depth=2
+LBB8_52:                                ##   in Loop: Header=BB8_48 Depth=2
 	addl	$1, %r12d
 	cmpl	%r14d, %r12d
-	jl	LBB8_54
-## %bb.59:                              ##   in Loop: Header=BB8_52 Depth=1
-	movl	_no_sz(%rip), %r9d
-LBB8_60:                                ##   in Loop: Header=BB8_52 Depth=1
+	jl	LBB8_48
+## BB#53:                               ##   in Loop: Header=BB8_46 Depth=1
+	movl	_no_sz(%rip), %r12d
+LBB8_54:                                ##   in Loop: Header=BB8_46 Depth=1
 	addl	$1, %r15d
-	cmpl	%r9d, %r15d
-	jl	LBB8_52
-LBB8_61:
+	cmpl	%r12d, %r15d
+	jl	LBB8_46
+LBB8_55:
 	vzeroupper
 	callq	_printresults
 	xorl	%eax, %eax
@@ -1147,43 +1071,116 @@ LBB8_61:
 	popq	%r15
 	popq	%rbp
 	retq
-LBB8_68:
-	movq	8(%rsp), %rcx           ## 8-byte Reload
-	cmpq	$0, _toupperversion+8(%rip)
-	jne	LBB8_18
-	jmp	LBB8_21
-LBB8_62:
-	vmovdqa	LCPI8_0(%rip), %ymm2    ## ymm2 = [0,1,2,3]
-	xorl	%edx, %edx
-	testq	%r8, %r8
-	jne	LBB8_35
-	jmp	LBB8_36
-LBB8_63:
-	vmovdqa	LCPI8_9(%rip), %xmm2    ## xmm2 = [0,1,2,3]
-	xorl	%ecx, %ecx
-	testq	%rdx, %rdx
-	jne	LBB8_46
-	jmp	LBB8_47
-LBB8_64:
-	movq	8(%rsp), %rcx           ## 8-byte Reload
-	movq	%r15, %r12
-	jmp	LBB8_65
-LBB8_66:
-	movq	8(%rsp), %rcx           ## 8-byte Reload
-	movq	56(%rsp), %r12          ## 8-byte Reload
-LBB8_65:
-	movq	48(%rsp), %r15          ## 8-byte Reload
-	cmpq	$0, _toupperversion+8(%rip)
-	jne	LBB8_18
-	jmp	LBB8_21
-LBB8_67:
-	movq	8(%rsp), %rcx           ## 8-byte Reload
-	movq	56(%rsp), %r12          ## 8-byte Reload
-	cmpq	$0, _toupperversion+8(%rip)
-	jne	LBB8_18
-	jmp	LBB8_21
+LBB8_56:
+	xorl	%edi, %edi
+	testq	%rsi, %rsi
+	je	LBB8_59
+LBB8_57:
+	movq	%rdx, %rsi
+	subq	%rdi, %rsi
+	leaq	224(%rax,%rdi,8), %rdi
+	vbroadcastsd	LCPI8_5(%rip), %ymm3
+	vmovaps	%ymm3, 96(%rsp)         ## 32-byte Spill
+	vpbroadcastq	LCPI8_6(%rip), %ymm3
+	vmovdqa	%ymm3, 32(%rsp)         ## 32-byte Spill
+	vpbroadcastq	LCPI8_7(%rip), %ymm5
+	vpsrlq	$32, %ymm0, %ymm6
+	vpbroadcastq	LCPI8_8(%rip), %ymm7
+	vpbroadcastq	LCPI8_9(%rip), %ymm8
+	vpbroadcastq	LCPI8_10(%rip), %ymm9
+	vpbroadcastq	LCPI8_11(%rip), %ymm10
+	vpbroadcastq	LCPI8_12(%rip), %ymm11
+	.p2align	4, 0x90
+LBB8_58:                                ## =>This Inner Loop Header: Depth=1
+	vpaddq	96(%rsp), %ymm2, %ymm12 ## 32-byte Folded Reload
+	vpaddq	32(%rsp), %ymm2, %ymm13 ## 32-byte Folded Reload
+	vpaddq	%ymm5, %ymm2, %ymm14
+	vpsrlq	$32, %ymm2, %ymm15
+	vpmuludq	%ymm0, %ymm15, %ymm15
+	vpmuludq	%ymm6, %ymm2, %ymm3
+	vpaddq	%ymm15, %ymm3, %ymm3
+	vpsllq	$32, %ymm3, %ymm3
+	vpmuludq	%ymm0, %ymm2, %ymm15
+	vpaddq	%ymm3, %ymm15, %ymm3
+	vpmuludq	%ymm6, %ymm12, %ymm15
+	vpsrlq	$32, %ymm12, %ymm4
+	vpmuludq	%ymm0, %ymm4, %ymm4
+	vpaddq	%ymm4, %ymm15, %ymm4
+	vpsllq	$32, %ymm4, %ymm4
+	vpmuludq	%ymm0, %ymm12, %ymm12
+	vpaddq	%ymm4, %ymm12, %ymm4
+	vpmuludq	%ymm6, %ymm13, %ymm12
+	vpsrlq	$32, %ymm13, %ymm15
+	vpmuludq	%ymm0, %ymm15, %ymm15
+	vpaddq	%ymm15, %ymm12, %ymm12
+	vpsllq	$32, %ymm12, %ymm12
+	vpmuludq	%ymm0, %ymm13, %ymm13
+	vpaddq	%ymm12, %ymm13, %ymm12
+	vpmuludq	%ymm6, %ymm14, %ymm13
+	vpsrlq	$32, %ymm14, %ymm15
+	vpmuludq	%ymm0, %ymm15, %ymm15
+	vpaddq	%ymm15, %ymm13, %ymm13
+	vpsllq	$32, %ymm13, %ymm13
+	vpmuludq	%ymm0, %ymm14, %ymm14
+	vpaddq	%ymm13, %ymm14, %ymm13
+	vpaddq	%ymm1, %ymm3, %ymm3
+	vpaddq	%ymm1, %ymm4, %ymm4
+	vpaddq	%ymm1, %ymm12, %ymm12
+	vpaddq	%ymm1, %ymm13, %ymm13
+	vmovdqu	%ymm3, -224(%rdi)
+	vmovdqu	%ymm4, -192(%rdi)
+	vmovdqu	%ymm12, -160(%rdi)
+	vmovdqu	%ymm13, -128(%rdi)
+	vpaddq	%ymm7, %ymm2, %ymm3
+	vpaddq	%ymm8, %ymm2, %ymm4
+	vpaddq	%ymm9, %ymm2, %ymm12
+	vpaddq	%ymm10, %ymm2, %ymm13
+	vpmuludq	%ymm6, %ymm3, %ymm14
+	vpsrlq	$32, %ymm3, %ymm15
+	vpmuludq	%ymm0, %ymm15, %ymm15
+	vpaddq	%ymm15, %ymm14, %ymm14
+	vpsllq	$32, %ymm14, %ymm14
+	vpmuludq	%ymm0, %ymm3, %ymm3
+	vpaddq	%ymm14, %ymm3, %ymm3
+	vpmuludq	%ymm6, %ymm4, %ymm14
+	vpsrlq	$32, %ymm4, %ymm15
+	vpmuludq	%ymm0, %ymm15, %ymm15
+	vpaddq	%ymm15, %ymm14, %ymm14
+	vpsllq	$32, %ymm14, %ymm14
+	vpmuludq	%ymm0, %ymm4, %ymm4
+	vpaddq	%ymm14, %ymm4, %ymm4
+	vpmuludq	%ymm6, %ymm12, %ymm14
+	vpsrlq	$32, %ymm12, %ymm15
+	vpmuludq	%ymm0, %ymm15, %ymm15
+	vpaddq	%ymm15, %ymm14, %ymm14
+	vpsllq	$32, %ymm14, %ymm14
+	vpmuludq	%ymm0, %ymm12, %ymm12
+	vpaddq	%ymm14, %ymm12, %ymm12
+	vpmuludq	%ymm6, %ymm13, %ymm14
+	vpsrlq	$32, %ymm13, %ymm15
+	vpmuludq	%ymm0, %ymm15, %ymm15
+	vpaddq	%ymm15, %ymm14, %ymm14
+	vpsllq	$32, %ymm14, %ymm14
+	vpmuludq	%ymm0, %ymm13, %ymm13
+	vpaddq	%ymm14, %ymm13, %ymm13
+	vpaddq	%ymm1, %ymm3, %ymm3
+	vmovdqu	%ymm3, -96(%rdi)
+	vpaddq	%ymm1, %ymm4, %ymm3
+	vmovdqu	%ymm3, -64(%rdi)
+	vpaddq	%ymm1, %ymm12, %ymm3
+	vmovdqu	%ymm3, -32(%rdi)
+	vpaddq	%ymm1, %ymm13, %ymm3
+	vmovdqu	%ymm3, (%rdi)
+	vpaddq	%ymm11, %ymm2, %ymm2
+	addq	$256, %rdi              ## imm = 0x100
+	addq	$-32, %rsi
+	jne	LBB8_58
+LBB8_59:
+	cmpq	%rdx, %rcx
+	jne	LBB8_33
+	jmp	LBB8_35
 	.cfi_endproc
-                                        ## -- End function
+
 	.globl	_debug                  ## @debug
 .zerofill __DATA,__common,_debug,4,2
 	.section	__DATA,__data
@@ -1206,45 +1203,54 @@ _no_version:
 	.comm	_ratios,8,3             ## @ratios
 	.section	__TEXT,__cstring,cstring_literals
 L_.str:                                 ## @.str
-	.asciz	"Before: %.40s...\n"
+	.asciz	"Before: %0.4s...\n"
 
-	.comm	_results,8,3            ## @results
 L_.str.1:                               ## @.str.1
-	.asciz	"After:  %.40s...\n"
+	.asciz	"Start Time: %f...\n"
 
 L_.str.2:                               ## @.str.2
+	.asciz	"Stop Time: %f...\n"
+
+	.comm	_results,8,3            ## @results
+L_.str.3:                               ## @.str.3
+	.asciz	"Total Time: %f...\n"
+
+L_.str.4:                               ## @.str.4
+	.asciz	"After:  %0.4s...\n"
+
+L_.str.5:                               ## @.str.5
 	.asciz	"simple"
 
-L_.str.3:                               ## @.str.3
+L_.str.6:                               ## @.str.6
 	.asciz	"optimised"
 
 	.section	__DATA,__data
 	.globl	_toupperversion         ## @toupperversion
 	.p2align	4
 _toupperversion:
-	.quad	L_.str.2
+	.quad	L_.str.5
 	.quad	_toupper_simple
-	.quad	L_.str.3
+	.quad	L_.str.6
 	.quad	_toupper_optimised
 	.space	16
 
 	.section	__TEXT,__cstring,cstring_literals
-L_.str.5:                               ## @.str.5
+L_.str.8:                               ## @.str.8
 	.asciz	"VARIANT3: gcc -lm -march=native toupper.c -O2"
 
-L_.str.6:                               ## @.str.6
+L_.str.9:                               ## @.str.9
 	.asciz	"Size: %ld \tRatio: %f \tRunning time:"
 
-L_.str.7:                               ## @.str.7
+L_.str.10:                              ## @.str.10
 	.asciz	"\t%s: %f"
 
-L_.str.9:                               ## @.str.9
+L_.str.12:                              ## @.str.12
 	.asciz	"-d"
 
-L_.str.10:                              ## @.str.10
+L_.str.13:                              ## @.str.13
 	.asciz	"-l"
 
-L_.str.11:                              ## @.str.11
+L_.str.14:                              ## @.str.14
 	.asciz	"-r"
 
 
