@@ -354,10 +354,9 @@ LBB6_1:                                 ## =>This Inner Loop Header: Depth=1
 	jg	GREATER
 	jmp	REST
 GREATER:
-	cmpl	%eax, %edx
+	cmpl	%ecx, %eax
 	jg	REST
-	movl	%eax, %edx
-	jmp	REST
+	incl	%edx
 REST:
 	## InlineAsm End
 	movl	%edx, -28(%rbp)
@@ -372,10 +371,9 @@ REST:
 	## InlineAsm End
 	movl	%eax, -32(%rbp)
 LBB6_4:                                 ##   in Loop: Header=BB6_1 Depth=1
-	movl	-24(%rbp), %ebx
-	movl	$1, %eax
+	movl	-24(%rbp), %eax
 	## InlineAsm Start
-	addl	%ebx, %eax
+	incl	%eax
 
 	## InlineAsm End
 	movl	%eax, -24(%rbp)

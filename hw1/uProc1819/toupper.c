@@ -70,24 +70,39 @@ static void toupper_optimised(char * text) {
     while(text[i] != '\0')
     {
         curr = (int)text[i];
+        /* __asm__ (
+         "cmp %%ebx, %%eax;"
+         "jg GREATER;"
+         "jmp REST;"
+         "GREATER: cmp %%ecx, %%eax;"
+         "jg REST;"
+         "incl %%edx;"
+         "REST: cmp $0, %%edx;"
+         "jg DEC; "
+         "jmp END; "
+         "DEC: subl $32, %%eax;"
+         "END: "
+         : "=a" (curr) : "a" (curr) , "b" (96), "c" (123), "d" (0)); */
+        
         __asm__ (
                  "cmp %%ebx, %%eax;"
                  "jg GREATER;"
                  "jmp REST;"
-                 "GREATER: cmp %%eax, %%edx;"
+                 "GREATER: cmp %%ecx, %%eax;"
                  "jg REST;"
-                 "movl %1, %%edx;"
-                 "jmp REST;"
+                 "incl %%edx;"
                  "REST: "
                  : "=d" (bound) : "a" (curr) , "b" (96), "c" (123), "d" (0) );
-      //  if(debug) printf("Bound: for %d is  %d ...\n", text[i], bound);
+        //if(debug) printf("Bound: for %d is  %d ...\n", text[i], bound);
         if(bound > 0)
         {
-      //      if(debug) printf("optimization changes the value for %d", text[i]);
+        //     if(debug) printf("optimization changes the value for %d", text[i]);
             __asm__ ( "subl %%ebx, %%eax;" : "=a" (curr) : "a" (curr) , "b" (32) );
         }
-        __asm__ ( "addl %%ebx, %%eax;" : "=a" (i) : "a" (1), "b" (i) );
+        __asm__ ( "incl %%eax;" : "=a" (i) : "a" (i));
     }
+    
+ 
 }
 
 
