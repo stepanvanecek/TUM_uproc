@@ -6,6 +6,8 @@
 #include "options.h"
 
 
+//int gettimeofday(struct timeval *tv, struct timezone *tz);
+
 int debug = 0;
 double *results;
 double *ratios;
@@ -13,7 +15,7 @@ unsigned long   *sizes;
 
 int no_sz = 1, no_ratio =1, no_version=1;
 
-static const double kMicro = 1.0e-6;
+
 
 static inline
 double gettime(void) {
@@ -31,9 +33,8 @@ double gettime(void) {
 		return(-1);
 	}
 
-	//return( ((double)TV.tv_usec) + kMicro * ((double)TV.tv_usec) );
-	return (double)TV.tv_usec;
-
+	//return( ((double)TV.tv_sec) + kMicro * ((double)TV.tv_usec) );
+	return ((double)TV.tv_sec);
 }
 
 
@@ -41,8 +42,8 @@ static void toupper_simple(char * text) {
 
   int i = 0;
   while(text[i] != '\0') {
-    
-    if(text[i] > 96 && text[i] < 123)
+
+    if(text[i] > 96 && *text < 123)
     {
       text[i] -= 32;
     }
@@ -52,7 +53,6 @@ static void toupper_simple(char * text) {
 
 
 static void toupper_optimised(char * text) {
-  // to be implemented
   while(*text != '\0') {
     
     //if(*text > 96 && *text < 123)
@@ -66,7 +66,7 @@ static void toupper_optimised(char * text) {
     // the code is to do a bit manipulation: we only need to a minus calculation
     // when the read character is inside of the range of 96 and 123. The code works
     // by using the MSB - most significant bit - of the resulting combination in 
-    // a logic operator: 
+    // logic operator: 
     // Assume the element we have read is 'a' which is 97 in ASCII.
     // (96 - 97) & (97 - 123) = (-1) & (-26) = -26 in bitwise & operator. If you look
     // at the binary representation of -26, you can see that it's MSB is 1. We then do
@@ -76,7 +76,6 @@ static void toupper_optimised(char * text) {
     // If we have read an already capital element like 'A' which is 65 in ASCII:
     // (96 - 65) & (65 - 123) = (31) & (-58) = 6 with a 0 as MSB, then 0 & (-32) = 0
     // hence we do not need to substract from the character.
-    // https://stackoverflow.com/questions/3883993/how-could-these-case-conversion-functions-be-improved
   }
 }
 
