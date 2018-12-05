@@ -1,18 +1,16 @@
 .PHONY:exe 
 
-#define which program to use as source
 PROGRAM = toupper
 SHELL := /bin/bash
 
 sources = $(PROGRAM).c
 
-#create and update program variants
 VARIANTS = $(PROGRAM)_variant1
 VARIANTS += $(PROGRAM)_variant2 
 VARIANTS += $(PROGRAM)_variant3 
 VARIANTS += $(PROGRAM)_variant4 
 
-# complile variants using gcc
+
 ICC = icc -fsource-asm -fno-alias -lm $(sources)
 GCC = gcc -lm -march=native $(sources)
 $(PROGRAM)_variant1 = $(GCC) -O0 
@@ -24,7 +22,7 @@ PARAMS = 80000
 
 #############################################################################################
 
-# make the Makefile
+
 exe: .autoclean $(VARIANTS) Makefile
 	if test -a ./$(PROGRAM)_variant1; then ./$(PROGRAM)_variant1 $(PARAMS) > results1;else rm -f results1; fi
 	if test -a ./$(PROGRAM)_variant2; then ./$(PROGRAM)_variant2 $(PARAMS) > results2;else rm -f results2;fi

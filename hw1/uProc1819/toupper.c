@@ -13,47 +13,76 @@ unsigned long   *sizes;
 
 int no_sz = 1, no_ratio =1, no_version=1;
 
+static const double kMicro = 1.0e-6;
 
+static inline
+double gettime(void) {
+/*
+  struct timespec tp;
+  clock_gettime(CLOCK_REALTIME, &tp);
+  return tp.tv_nsec/1000;
+*/
+	struct timeval TV;
+	struct timezone TZ;
 
-static inline double gettime(void) {
-	
-	//Use the gettimeofday system call function (see gettimeofday documentation)
-	struct timeval tm;
-	gettimeofday(&tm, NULL);
+	const int RC = gettimeofday(&TV, &TZ);
+	if (RC == -1) {
+		printf("ERROR: Bad call to gettimeofday\n");
+		return(-1);
+	}
 
-	//Get the time in microseconds
-	return tm.tv_usec;
-	
+	//return( ((double)TV.tv_usec) + kMicro * ((double)TV.tv_usec) );
+	return (double)TV.tv_usec;
+
 }
 
 
-//Uses the ASCII table to turn a lower case to upper case character
 static void toupper_simple(char * text) {
-  
-  	int i=0;
 
-  	//Iterate for the entire string
-	while(text[i] !=  '\0'){
-		//Check if the character is indeed a lower case character (alternatively use ASCII code)
-		if(text[i] >= 'a' && text[i] <= 'z'){
-			// Take the capital version of the letter
-			text[i] = text[i] - 32;
-		}
-
-
-		//next character
-		i++;
-	}
+  int i = 0;
+  while(text[i] != '\0') {
+    
+    if(text[i] > 96 && text[i] < 123)
+    {
+      text[i] -= 32;
+    }
+    i++;
+  }
 }
 
 
 static void toupper_optimised(char * text) {
   // to be implemented
+  while(*text != '\0') {
+    
+    //if(*text > 96 && *text < 123)
+    //{
+    //  *text -= 32;
+    //}
+    *text += (((96 - *text) & (*text - 123)) >> 7) & (-32);
+    text++;
+    // The main idea here was to eliminate the branch prediction here and
+    // the unnecessary memory reads to the text array. The basic idea behind
+    // the code is to do a bit manipulation: we only need to a minus calculation
+    // when the read character is inside of the range of 96 and 123. The code works
+    // by using the MSB - most significant bit - of the resulting combination in 
+    // a logic operator: 
+    // Assume the element we have read is 'a' which is 97 in ASCII.
+    // (96 - 97) & (97 - 123) = (-1) & (-26) = -26 in bitwise & operator. If you look
+    // at the binary representation of -26, you can see that it's MSB is 1. We then do
+    // do a shift arithmetic right operation with 7 - since chars are 8 bits - bits 
+    // to carry the MSB over all the bits of the number. And then (-26) & (-32) results 
+    // in (-32) hence we minus the value from the number.
+    // If we have read an already capital element like 'A' which is 65 in ASCII:
+    // (96 - 65) & (65 - 123) = (31) & (-58) = 6 with a 0 as MSB, then 0 & (-32) = 0
+    // hence we do not need to substract from the character.
+    // https://stackoverflow.com/questions/3883993/how-could-these-case-conversion-functions-be-improved
+  }
 }
 
 
 /*****************************************************************/
-//Utility functions
+
 
 // align at 16byte boundaries
 void* mymalloc(unsigned long int size)
@@ -62,7 +91,6 @@ void* mymalloc(unsigned long int size)
      return (void*)((unsigned long int)addr /16*16+16);
 }
 
-// Randomly generate a letter character
 char createChar(int ratio){
 	char isLower = rand()%100;
 
@@ -78,7 +106,6 @@ char createChar(int ratio){
 
 }
 
-// Creates a string
 char * init(unsigned long int sz, int ratio){
     int i=0;
     char *text = (char *) mymalloc(sz+1);
