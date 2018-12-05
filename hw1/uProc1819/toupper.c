@@ -39,6 +39,8 @@ static void toupper_simple(char * text) {
     }
 }
 
+/** Intrinsics implementation -- not working right now **/
+
 /*static void toupper_optimised(char * text) {
   // to be implemented
     int upperBound, lowerBound;
@@ -62,15 +64,14 @@ static void toupper_simple(char * text) {
     }
 } */
 
+// inline assembly code
 static void toupper_optimised(char * text) {
-    // to be implemented
     int sub, i = 0;
     int bound = 0;
     int curr;
     while(text[i] != '\0')
     {
-        curr = (int)text[i];
-        /* __asm__ (
+         __asm__ (
          "cmp %%ebx, %%eax;"
          "jg GREATER;"
          "jmp REST;"
@@ -82,27 +83,10 @@ static void toupper_optimised(char * text) {
          "jmp END; "
          "DEC: subl $32, %%eax;"
          "END: "
-         : "=a" (curr) : "a" (curr) , "b" (96), "c" (123), "d" (0)); */
-        
-        __asm__ (
-                 "cmp %%ebx, %%eax;"
-                 "jg GREATER;"
-                 "jmp REST;"
-                 "GREATER: cmp %%ecx, %%eax;"
-                 "jg REST;"
-                 "incl %%edx;"
-                 "REST: "
-                 : "=d" (bound) : "a" (curr) , "b" (96), "c" (123), "d" (0) );
-        //if(debug) printf("Bound: for %d is  %d ...\n", text[i], bound);
-        if(bound > 0)
-        {
-        //     if(debug) printf("optimization changes the value for %d", text[i]);
-            __asm__ ( "subl %%ebx, %%eax;" : "=a" (curr) : "a" (curr) , "b" (32) );
-        }
+         : "=a" (text[i]) : "a" ((int)text[i]) , "b" (96), "c" (123), "d" (0));
         __asm__ ( "incl %%eax;" : "=a" (i) : "a" (i));
     }
-    
- 
+    if(debug) printf("%s", text);
 }
 
 

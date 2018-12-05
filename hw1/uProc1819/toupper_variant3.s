@@ -379,20 +379,62 @@ Lcfi27:
 	movq	%rsp, %rbp
 Lcfi28:
 	.cfi_def_cfa_register %rbp
-	cmpb	$0, (%rdi)
+	pushq	%rbx
+Lcfi29:
+	.cfi_offset %rbx, -24
+	movq	%rdi, %r8
+	movb	(%r8), %al
+	testb	%al, %al
 	je	LBB5_3
 ## BB#1:
-	xorl	%eax, %eax
+	xorl	%edi, %edi
+	movq	%r8, %rsi
 	.p2align	4, 0x90
 LBB5_2:                                 ## =>This Inner Loop Header: Depth=1
+	movsbl	%al, %eax
+	movl	$96, %ebx
+	movl	$123, %ecx
+	xorl	%edx, %edx
+	## InlineAsm Start
+	cmpl	%ebx, %eax
+	jg	GREATER
+	jmp	REST
+GREATER:
+	cmpl	%ecx, %eax
+	jg	REST
+	incl	%edx
+REST:
+	cmpl	$0, %edx
+	jg	DEC
+	jmp	END
+DEC:
+	subl	$32, %eax
+END:
+	## InlineAsm End
+	movb	%al, (%rsi)
+	movl	%edi, %eax
 	## InlineAsm Start
 	incl	%eax
 
 	## InlineAsm End
-	movslq	%eax, %rcx
-	cmpb	$0, (%rdi,%rcx)
+	movl	%eax, %edi
+	movslq	%edi, %rax
+	leaq	(%r8,%rax), %rsi
+	movzbl	(%r8,%rax), %eax
+	testb	%al, %al
 	jne	LBB5_2
 LBB5_3:
+	cmpl	$0, _debug(%rip)
+	je	LBB5_4
+## BB#5:
+	leaq	L_.str.15(%rip), %rdi
+	xorl	%eax, %eax
+	movq	%r8, %rsi
+	popq	%rbx
+	popq	%rbp
+	jmp	_printf                 ## TAILCALL
+LBB5_4:
+	popq	%rbx
 	popq	%rbp
 	retq
 	.cfi_endproc
@@ -403,24 +445,24 @@ _run:                                   ## @run
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
-Lcfi29:
-	.cfi_def_cfa_offset 16
 Lcfi30:
+	.cfi_def_cfa_offset 16
+Lcfi31:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Lcfi31:
+Lcfi32:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
 	pushq	%r12
 	pushq	%rbx
-Lcfi32:
-	.cfi_offset %rbx, -48
 Lcfi33:
-	.cfi_offset %r12, -40
+	.cfi_offset %rbx, -48
 Lcfi34:
-	.cfi_offset %r14, -32
+	.cfi_offset %r12, -40
 Lcfi35:
+	.cfi_offset %r14, -32
+Lcfi36:
 	.cfi_offset %r15, -24
 	movl	%esi, %r14d
 	movl	%edi, %r15d
@@ -456,12 +498,12 @@ _printresults:                          ## @printresults
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
-Lcfi36:
-	.cfi_def_cfa_offset 16
 Lcfi37:
+	.cfi_def_cfa_offset 16
+Lcfi38:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Lcfi38:
+Lcfi39:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -469,15 +511,15 @@ Lcfi38:
 	pushq	%r12
 	pushq	%rbx
 	pushq	%rax
-Lcfi39:
-	.cfi_offset %rbx, -56
 Lcfi40:
-	.cfi_offset %r12, -48
+	.cfi_offset %rbx, -56
 Lcfi41:
-	.cfi_offset %r13, -40
+	.cfi_offset %r12, -48
 Lcfi42:
-	.cfi_offset %r14, -32
+	.cfi_offset %r13, -40
 Lcfi43:
+	.cfi_offset %r14, -32
+Lcfi44:
 	.cfi_offset %r15, -24
 	leaq	L_.str.8(%rip), %rdi
 	callq	_puts
@@ -615,12 +657,12 @@ _main:                                  ## @main
 	.cfi_startproc
 ## BB#0:
 	pushq	%rbp
-Lcfi44:
-	.cfi_def_cfa_offset 16
 Lcfi45:
+	.cfi_def_cfa_offset 16
+Lcfi46:
 	.cfi_offset %rbp, -16
 	movq	%rsp, %rbp
-Lcfi46:
+Lcfi47:
 	.cfi_def_cfa_register %rbp
 	pushq	%r15
 	pushq	%r14
@@ -629,15 +671,15 @@ Lcfi46:
 	pushq	%rbx
 	andq	$-32, %rsp
 	subq	$160, %rsp
-Lcfi47:
-	.cfi_offset %rbx, -56
 Lcfi48:
-	.cfi_offset %r12, -48
+	.cfi_offset %rbx, -56
 Lcfi49:
-	.cfi_offset %r13, -40
+	.cfi_offset %r12, -48
 Lcfi50:
-	.cfi_offset %r14, -32
+	.cfi_offset %r13, -40
 Lcfi51:
+	.cfi_offset %r14, -32
+Lcfi52:
 	.cfi_offset %r15, -24
 	xorl	%r13d, %r13d
 	cmpl	$2, %edi
@@ -1245,6 +1287,9 @@ L_.str.13:                              ## @.str.13
 
 L_.str.14:                              ## @.str.14
 	.asciz	"-r"
+
+L_.str.15:                              ## @.str.15
+	.asciz	"%s"
 
 
 .subsections_via_symbols

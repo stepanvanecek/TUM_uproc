@@ -329,6 +329,7 @@ Lcfi19:
 Lcfi20:
 	.cfi_def_cfa_register %rbp
 	pushq	%rbx
+	subq	$56, %rsp
 Lcfi21:
 	.cfi_offset %rbx, -24
 	movq	%rdi, -16(%rbp)
@@ -339,16 +340,20 @@ LBB6_1:                                 ## =>This Inner Loop Header: Depth=1
 	movslq	-24(%rbp), %rcx
 	movsbl	(%rax,%rcx), %edx
 	cmpl	$0, %edx
-	je	LBB6_5
+	je	LBB6_3
 ## BB#2:                                ##   in Loop: Header=BB6_1 Depth=1
 	movq	-16(%rbp), %rax
 	movslq	-24(%rbp), %rcx
-	movsbl	(%rax,%rcx), %edx
-	movl	%edx, -32(%rbp)
-	movl	-32(%rbp), %eax
+	movq	-16(%rbp), %rdx
+	movslq	-24(%rbp), %rsi
+	movsbl	(%rdx,%rsi), %edi
 	movl	$96, %ebx
-	movl	$123, %ecx
+	movl	$123, %r8d
 	xorl	%edx, %edx
+	movq	%rax, -40(%rbp)         ## 8-byte Spill
+	movl	%edi, %eax
+	movq	%rcx, -48(%rbp)         ## 8-byte Spill
+	movl	%r8d, %ecx
 	## InlineAsm Start
 	cmpl	%ebx, %eax
 	jg	GREATER
@@ -358,19 +363,16 @@ GREATER:
 	jg	REST
 	incl	%edx
 REST:
+	cmpl	$0, %edx
+	jg	DEC
+	jmp	END
+DEC:
+	subl	$32, %eax
+END:
 	## InlineAsm End
-	movl	%edx, -28(%rbp)
-	cmpl	$0, -28(%rbp)
-	jle	LBB6_4
-## BB#3:                                ##   in Loop: Header=BB6_1 Depth=1
-	movl	-32(%rbp), %eax
-	movl	$32, %ebx
-	## InlineAsm Start
-	subl	%ebx, %eax
-
-	## InlineAsm End
-	movl	%eax, -32(%rbp)
-LBB6_4:                                 ##   in Loop: Header=BB6_1 Depth=1
+	movq	-40(%rbp), %rsi         ## 8-byte Reload
+	movq	-48(%rbp), %r9          ## 8-byte Reload
+	movb	%al, (%rsi,%r9)
 	movl	-24(%rbp), %eax
 	## InlineAsm Start
 	incl	%eax
@@ -378,7 +380,17 @@ LBB6_4:                                 ##   in Loop: Header=BB6_1 Depth=1
 	## InlineAsm End
 	movl	%eax, -24(%rbp)
 	jmp	LBB6_1
+LBB6_3:
+	cmpl	$0, _debug(%rip)
+	je	LBB6_5
+## BB#4:
+	leaq	L_.str.15(%rip), %rdi
+	movq	-16(%rbp), %rsi
+	movb	$0, %al
+	callq	_printf
+	movl	%eax, -52(%rbp)         ## 4-byte Spill
 LBB6_5:
+	addq	$56, %rsp
 	popq	%rbx
 	popq	%rbp
 	retq
@@ -963,6 +975,9 @@ L_.str.13:                              ## @.str.13
 
 L_.str.14:                              ## @.str.14
 	.asciz	"-r"
+
+L_.str.15:                              ## @.str.15
+	.asciz	"%s"
 
 
 .subsections_via_symbols
