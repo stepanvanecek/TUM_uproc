@@ -382,13 +382,12 @@ Lcfi28:
 	pushq	%rbx
 Lcfi29:
 	.cfi_offset %rbx, -24
-	movq	%rdi, %r8
-	movb	(%r8), %al
+	movb	(%rdi), %al
 	testb	%al, %al
-	je	LBB5_3
+	je	LBB5_5
 ## BB#1:
-	xorl	%edi, %edi
-	movq	%r8, %rsi
+	xorl	%esi, %esi
+	movq	%rdi, %r8
 	.p2align	4, 0x90
 LBB5_2:                                 ## =>This Inner Loop Header: Depth=1
 	movsbl	%al, %eax
@@ -400,40 +399,35 @@ LBB5_2:                                 ## =>This Inner Loop Header: Depth=1
 	jg	GREATER
 	jmp	REST
 GREATER:
-	cmpl	%ecx, %eax
+	cmpl	%eax, %edx
 	jg	REST
-	incl	%edx
+	movl	%eax, %edx
+	jmp	REST
 REST:
-	cmpl	$0, %edx
-	jg	DEC
-	jmp	END
-DEC:
-	subl	$32, %eax
-END:
 	## InlineAsm End
-	movb	%al, (%rsi)
-	movl	%edi, %eax
+	testl	%edx, %edx
+	jle	LBB5_4
+## BB#3:                                ##   in Loop: Header=BB5_2 Depth=1
+	movl	$32, %ebx
 	## InlineAsm Start
-	incl	%eax
+	subl	%ebx, %eax
 
 	## InlineAsm End
-	movl	%eax, %edi
-	movslq	%edi, %rax
-	leaq	(%r8,%rax), %rsi
-	movzbl	(%r8,%rax), %eax
+	movb	%al, (%r8)
+LBB5_4:                                 ##   in Loop: Header=BB5_2 Depth=1
+	movl	$1, %eax
+	movl	%esi, %ebx
+	## InlineAsm Start
+	addl	%ebx, %eax
+
+	## InlineAsm End
+	movl	%eax, %esi
+	movslq	%esi, %rax
+	leaq	(%rdi,%rax), %r8
+	movzbl	(%rdi,%rax), %eax
 	testb	%al, %al
 	jne	LBB5_2
-LBB5_3:
-	cmpl	$0, _debug(%rip)
-	je	LBB5_4
-## BB#5:
-	leaq	L_.str.15(%rip), %rdi
-	xorl	%eax, %eax
-	movq	%r8, %rsi
-	popq	%rbx
-	popq	%rbp
-	jmp	_printf                 ## TAILCALL
-LBB5_4:
+LBB5_5:
 	popq	%rbx
 	popq	%rbp
 	retq
@@ -1287,9 +1281,6 @@ L_.str.13:                              ## @.str.13
 
 L_.str.14:                              ## @.str.14
 	.asciz	"-r"
-
-L_.str.15:                              ## @.str.15
-	.asciz	"%s"
 
 
 .subsections_via_symbols
