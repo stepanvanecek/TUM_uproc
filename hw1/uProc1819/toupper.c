@@ -5,6 +5,9 @@
 #include <sys/time.h>
 #include "options.h"
 
+#include <immintrin.h>
+// #include "nmmintrin.h" // for SSE4.2
+// #include "immintrin.h" // for AVX
 
 //int gettimeofday(struct timeval *tv, struct timezone *tz);
 
@@ -14,32 +17,32 @@ double *ratios;
 unsigned long   *sizes;
 
 int no_sz = 1, no_ratio =1, no_version=1;
+int array_sz = 0;
 
 
 
 static inline
 double gettime(void) {
-/*
+
   struct timespec tp;
   clock_gettime(CLOCK_REALTIME, &tp);
   return tp.tv_nsec/1000;
-*/
-	struct timeval TV;
-	struct timezone TZ;
 
-	const int RC = gettimeofday(&TV, &TZ);
-	if (RC == -1) {
-		printf("ERROR: Bad call to gettimeofday\n");
-		return(-1);
-	}
-
-	//return( ((double)TV.tv_sec) + kMicro * ((double)TV.tv_usec) );
-	return ((double)TV.tv_sec);
+	// struct timeval TV;
+	// struct timezone TZ;
+  //
+	// const int RC = gettimeofday(&TV, &TZ);
+	// if (RC == -1) {
+	// 	printf("ERROR: Bad call to gettimeofday\n");
+	// 	return(-1);
+	// }
+  //
+	// //return( ((double)TV.tv_sec) + kMicro * ((double)TV.tv_usec) );
+	// return ((double)TV.tv_sec);
 }
 
 
 static void toupper_simple(char * text) {
-
   int i = 0;
   while(text[i] != '\0') {
 
@@ -52,35 +55,159 @@ static void toupper_simple(char * text) {
 }
 
 
-static void toupper_optimised(char * text) {
-  while(*text != '\0') {
-    
-    //if(*text > 96 && *text < 123)
-    //{
-    //  *text -= 32;
-    //}
-    *text += (((96 - *text) & (*text - 123)) >> 7) & (-32);
-    text++;
-    // The main idea here was to eliminate the branch prediction here and
-    // the unnecessary memory reads to the text array. The basic idea behind
-    // the code is to do a bit manipulation: we only need to a minus calculation
-    // when the read character is inside of the range of 96 and 123. The code works
-    // by using the MSB - most significant bit - of the resulting combination in 
-    // logic operator: 
-    // Assume the element we have read is 'a' which is 97 in ASCII.
-    // (96 - 97) & (97 - 123) = (-1) & (-26) = -26 in bitwise & operator. If you look
-    // at the binary representation of -26, you can see that it's MSB is 1. We then do
-    // do a shift arithmetic right operation with 7 - since chars are 8 bits - bits 
-    // to carry the MSB over all the bits of the number. And then (-26) & (-32) results 
-    // in (-32) hence we minus the value from the number.
-    // If we have read an already capital element like 'A' which is 65 in ASCII:
-    // (96 - 65) & (65 - 123) = (31) & (-58) = 6 with a 0 as MSB, then 0 & (-32) = 0
-    // hence we do not need to substract from the character.
-  }
+
+static void toupper_optimised(char * text)
+{
+    // printf("opt size: %d ", array_sz);
+    __m128i array;
+    for(int i = 0; i<array_sz; i = i+16)
+    {
+      array = _mm_load_si128((__m128i*)&text[i]);
+      uint8_t *val = (uint8_t*) &array;
+      //printf("--- %.16s\n", (char*)&array);
+
+        for(int k = 0; k< 16; k++)
+        {
+          text[i+k] += (((96 - val[k]) & (val[k] - 123)) >> 7) & (-32);
+        }
+
+
+    }
+
+    /////////////////
+    //openMP - fastest version so far
+    /////////////////
+    // #pragma omp parallel for
+    // for(int k = 0; k<array_sz; k++)
+    // {
+    //   text[k] += (((96 - text[k]) & (text[k] - 123)) >> 7) & (-32);
+    // }
+
 }
 
 
+
+
+
+
+//   __m256i array;
+//   array = _mm256_load_si256((__m256i*)&text[0]);
+//   for(int k = 0; k<array_sz; k = k+32 )
+//   {
+// //      array = _mm256_load_si256((__m256i*)&text[k]);
+// //      printf("-%d- ---%s---\n", k, (char*)&array);
+// //       for(int i = 0; i< 32; i++)
+// //       {
+// //           if(text[i] > 96 && *text < 123)
+// //           {
+// //             text[i] -= 32;
+// //           }
+// //
+// // //        *(&array+i) += (((96 - *(&array+i)) & (*(&array+i) - 123)) >> 7) & (-32);
+// //
+// //       }
+//   }
+
+
+
+  // int i = 0;
+  // __m128i array;
+  //
+  //
+  // while(text[i] != '\0')
+  // {
+  //   i++;
+  //
+  //   // printf(" %c %i %i", text[i], &text[i], &text[i+1]);
+  //   // array = _mm_load_si128((__m128i*)&text[i]);
+  //   // printf("-%d- %s\n", i, (char*)&array);
+  //   //
+  //   // i = i+16;
+  //   // if (i > 100000)
+  //   // {
+  //   //   break;
+  //   // }
+  // };
+  // printf("strlen %d", i);
+
+  //#pragma omp for simd
+//
+// static void toupper_optimised(char * text) {
+//   while(*text != '\0') {
+//
+//
+//     *text += (((96 - *text) & (*text - 123)) >> 7) & (-32);
+//     text++;
+//     // The main idea here was to eliminate the branch prediction here and
+//     // the unnecessary memory reads to the text array. The basic idea behind
+//     // the code is to do a bit manipulation: we only need to a minus calculation
+//     // when the read character is inside of the range of 96 and 123. The code works
+//     // by using the MSB - most significant bit - of the resulting combination in
+//     // logic operator:
+//     // Assume the element we have read is 'a' which is 97 in ASCII.
+//     // (96 - 97) & (97 - 123) = (-1) & (-26) = -26 in bitwise & operator. If you look
+//     // at the binary representation of -26, you can see that it's MSB is 1. We then do
+//     // do a shift arithmetic right operation with 7 - since chars are 8 bits - bits
+//     // to carry the MSB over all the bits of the number. And then (-26) & (-32) results
+//     // in (-32) hence we minus the value from the number.
+//     // If we have read an already capital element like 'A' which is 65 in ASCII:
+//     // (96 - 65) & (65 - 123) = (31) & (-58) = 6 with a 0 as MSB, then 0 & (-32) = 0
+//     // hence we do not need to substract from the character.
+//   }
+//
+// static void toupper_optimised(char * text) {
+//     // to be implemented
+//       int upperBound, lowerBound;
+//       __m256i curr;
+//       int i = 0;
+//       __m256i lower = _mm256_cvtepi8_epi16(_mm_load_si128((__m128i*)96));
+//       printf("lower: %d", lower);
+//       __m256i upper = _mm256_cvtepi8_epi16(_mm_load_si128((__m128i*)123));
+//       printf("upper: %d", upper);
+//      /* while(text[i] != '\0')
+//       {
+//           curr = _mm256_cvtepi8_epi16(_mm_load_si128((__m128i*)text[i]));
+//           printf("curr: %d", curr);
+//           upperBound = _mm256_cvtsi256_si32 (_mm256_cmpgt_epi16 (curr, lower));
+//           lowerBound = _mm256_cvtsi256_si32 (_mm256_cmpgt_epi16(curr, upper));
+//           if( lowerBound && !upperBound )
+//           {
+//               text[i] -= 32;
+//           }
+//           i++;
+//       }
+//   }*/
+// }
 /*****************************************************************/
+
+// inline assembly code
+static void toupper_assembly(char * text) {
+    int sub, i = 0;
+    int bound = 0;
+    int curr;
+    while(text[i] != '\0')
+    {
+        curr = (int)text[i];
+        __asm__ (
+                 "cmp %%ebx, %%eax;"
+                 "jg GREATER;"
+                 "jmp REST;"
+                 "GREATER: cmp %%eax, %%edx;"
+                 "jg REST;"
+                 "movl %1, %%edx;"
+                 "jmp REST;"
+                 "REST: "
+                 : "=d" (bound) : "a" (curr) , "b" (96), "c" (123), "d" (0) );
+        //if(debug) printf("Bound: for %d is  %d ...\n", text[i], bound);
+        if(bound > 0)
+        {
+         //   if(debug) printf("optimization changes the value for %d", text[i]);
+            __asm__ ( "subl %%ebx, %%eax;" : "=a" (text[i]) : "a" (curr) , "b" (32) );
+        }
+        __asm__ ( "addl %%ebx, %%eax;" : "=a" (i) : "a" (1), "b" (i) );
+    }
+}
+
 
 
 // align at 16byte boundaries
@@ -153,6 +280,7 @@ struct _toupperversion {
 } toupperversion[] = {
     { "simple",    toupper_simple },
     { "optimised", toupper_optimised },
+  //  { "assembly", toupper_assembly ),
     { 0,0 }
 };
 
@@ -186,6 +314,8 @@ void printresults(){
 
 int main(int argc, char* argv[])
 {
+     //omp_set_num_threads(2);
+
     unsigned long int min_sz=800000, max_sz = 0, step_sz = 10000;
 		int min_ratio=50, max_ratio = 0, step_ratio = 1;
 		int arg,i,j,v;
@@ -213,6 +343,7 @@ int main(int argc, char* argv[])
 			}
 
 		}
+
     for(v=0; toupperversion[v].func !=0; v++)
 		no_version=v+1;
 		if(0==max_sz)  no_sz =1;
@@ -231,7 +362,12 @@ int main(int argc, char* argv[])
 
 		for(i=0;i<no_sz;i++)
 			for(j=0;j<no_ratio;j++)
-				run(i,j);
+      {
+        array_sz = sizes[i];
+        run(i,j);
+      }
+
+
 
 		printresults();
     return 0;
