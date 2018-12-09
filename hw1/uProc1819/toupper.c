@@ -111,7 +111,24 @@ static void toupper_assembly(char * text) {
     }
 }
 
+static void toupper_combined(char * text)
+{
+    // printf("opt size: %d ", array_sz);
+    __m128i array;
 
+    #pragma omp parallel for
+    for(int i = 0; i<array_sz; i = i+16)
+    {
+      array = _mm_load_si128((__m128i*)&text[i]);
+      uint8_t *val = (uint8_t*) &array;
+      //printf("--- %.16s\n", (char*)&array);
+
+        for(int k = 0; k< 16; k++)
+        {
+          text[i+k] += (((96 - val[k]) & (val[k] - 123)) >> 7) & (-32);
+        }
+    }
+}
 
 
 
@@ -282,6 +299,7 @@ struct _toupperversion {
     { "omp", toupper_openmp },
     { "ass", toupper_assembly },
     { "intr", toupper_intrinsics },
+    { "combined", toupper_combined },
     { 0,0 }
 };
 
