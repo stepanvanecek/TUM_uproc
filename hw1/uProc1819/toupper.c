@@ -54,9 +54,7 @@ static void toupper_simple(char * text) {
   }
 }
 
-
-
-static void toupper_optimised(char * text)
+static void toupper_intrinsics(char * text)
 {
     // printf("opt size: %d ", array_sz);
     __m128i array;
@@ -70,20 +68,49 @@ static void toupper_optimised(char * text)
         {
           text[i+k] += (((96 - val[k]) & (val[k] - 123)) >> 7) & (-32);
         }
-
-
     }
-
-    /////////////////
-    //openMP - fastest version so far
-    /////////////////
-    // #pragma omp parallel for
-    // for(int k = 0; k<array_sz; k++)
-    // {
-    //   text[k] += (((96 - text[k]) & (text[k] - 123)) >> 7) & (-32);
-    // }
-
 }
+
+/////////////////
+//openMP - fastest version so far
+/////////////////
+static void toupper_openmp(char * text)
+{
+    #pragma omp parallel for
+    for(int k = 0; k<array_sz; k++)
+    {
+      text[k] += (((96 - text[k]) & (text[k] - 123)) >> 7) & (-32);
+    }
+}
+
+// inline assembly code
+static void toupper_assembly(char * text) {
+    int sub, i = 0;
+    int bound = 0;
+    int curr;
+    while(text[i] != '\0')
+    {
+        curr = (int)text[i];
+        __asm__ (
+                 "cmp %%ebx, %%eax;"
+                 "jg GREATER;"
+                 "jmp REST;"
+                 "GREATER: cmp %%eax, %%edx;"
+                 "jg REST;"
+                 "movl %1, %%edx;"
+                 "jmp REST;"
+                 "REST: "
+                 : "=d" (bound) : "a" (curr) , "b" (96), "c" (123), "d" (0) );
+        //if(debug) printf("Bound: for %d is  %d ...\n", text[i], bound);
+        if(bound > 0)
+        {
+         //   if(debug) printf("optimization changes the value for %d", text[i]);
+            __asm__ ( "subl %%ebx, %%eax;" : "=a" (text[i]) : "a" (curr) , "b" (32) );
+        }
+        __asm__ ( "addl %%ebx, %%eax;" : "=a" (i) : "a" (1), "b" (i) );
+    }
+}
+
 
 
 
@@ -180,33 +207,6 @@ static void toupper_optimised(char * text)
 // }
 /*****************************************************************/
 
-// inline assembly code
-static void toupper_assembly(char * text) {
-    int sub, i = 0;
-    int bound = 0;
-    int curr;
-    while(text[i] != '\0')
-    {
-        curr = (int)text[i];
-        __asm__ (
-                 "cmp %%ebx, %%eax;"
-                 "jg GREATER;"
-                 "jmp REST;"
-                 "GREATER: cmp %%eax, %%edx;"
-                 "jg REST;"
-                 "movl %1, %%edx;"
-                 "jmp REST;"
-                 "REST: "
-                 : "=d" (bound) : "a" (curr) , "b" (96), "c" (123), "d" (0) );
-        //if(debug) printf("Bound: for %d is  %d ...\n", text[i], bound);
-        if(bound > 0)
-        {
-         //   if(debug) printf("optimization changes the value for %d", text[i]);
-            __asm__ ( "subl %%ebx, %%eax;" : "=a" (text[i]) : "a" (curr) , "b" (32) );
-        }
-        __asm__ ( "addl %%ebx, %%eax;" : "=a" (i) : "a" (1), "b" (i) );
-    }
-}
 
 
 
@@ -278,9 +278,10 @@ struct _toupperversion {
     const char* name;
     toupperfunc func;
 } toupperversion[] = {
-    { "simple",    toupper_simple },
-    { "optimised", toupper_optimised },
-  //  { "assembly", toupper_assembly ),
+    { "sim",    toupper_simple },
+    { "omp", toupper_openmp },
+    { "ass", toupper_assembly },
+    { "intr", toupper_intrinsics },
     { 0,0 }
 };
 
