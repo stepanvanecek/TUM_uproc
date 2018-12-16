@@ -26,7 +26,7 @@ double gettime(void) {
 
   struct timespec tp;
   clock_gettime(CLOCK_REALTIME, &tp);
-  return tp.tv_nsec/1000;
+  return (tp.tv_sec * 1000000000 + tp.tv_nsec) >> 10;
 
 	// struct timeval TV;
 	// struct timezone TZ;
@@ -43,42 +43,100 @@ double gettime(void) {
 
 
 static void toupper_simple(char * text) {
-  int i = 0;
-  while(text[i] != '\0') {
+  for(int k = 0; k<array_sz; k++)
+  {
+    text[k] += (((96 - text[k]) & (text[k] - 123)) >> 7) & (-32);
+  }
 
-    if(text[i] > 96 && *text < 123)
-    {
-      text[i] -= 32;
-    }
-    i++;
+
+  // int i = 0;
+  // while(text[i] != '\0') {
+  //
+  //   if(text[i] > 96 && *text < 123)
+  //   {
+  //     text[i] -= 32;
+  //   }
+  //   i++;
+  // }
+}
+
+static void toupper_bytes(char * text)
+{
+  char lowLimit = 0x60;
+  char highLimit = 0x7b;
+
+  for(int i = 0; i<array_sz; i = i+1)
+  {
+    char lowMask = ( text[i] > lowLimit ) ? 0xFF : 0;
+    char highMask = ( highLimit > text[i] ) ? 0xFF : 0;
+    char modifier = 0x20;
+
+    modifier = modifier & lowMask;
+    modifier = modifier & highMask;
+
+    text[i] = text[i] - modifier;
   }
 }
 
 static void toupper_intrinsics(char * text)
 {
-    // printf("opt size: %d ", array_sz);
-    __m128i array;
-    for(int i = 0; i<array_sz; i = i+16)
-    {
-      array = _mm_load_si128((__m128i*)&text[i]);
-      uint8_t *val = (uint8_t*) &array;
-      //printf("--- %.16s\n", (char*)&array);
 
-        for(int k = 0; k< 16; k++)
-        {
-          text[i+k] += (((96 - val[k]) & (val[k] - 123)) >> 7) & (-32);
-        }
-    }
+	__m256i chunk;
+
+	//Load constants
+	__m256i lowLimit = _mm256_set1_epi8 (0x60); //a-1
+	__m256i highLimit = _mm256_set1_epi8 (0x7b); //z+1
+  __m256i modifier = _mm256_set1_epi8 (0x20); //=32
+
+
+	//for every 32 characters
+	for(int i = 0; i < array_sz; i=i+32)
+	{
+
+		//fetch 32 characters from memory (265 bits)
+		chunk = _mm256_loadu_si256 ((__m256i*)&(text[i]));
+
+		//Compare characters with 'a-1': chunk > a-1 ?
+    //store ones if bigger than 'a-1'
+    __m256i lowMask = _mm256_cmpgt_epi8 (chunk, lowLimit);
+
+		//Compare characters with 'z+1': z+1 > chunk ?
+    //store ones if smaller than 'z+1'
+    __m256i highMask = _mm256_cmpgt_epi8 (highLimit, chunk);
+
+    //mask to 32 where it is a lower case
+    lowMask = _mm256_and_si256 (modifier, lowMask);
+    lowMask = _mm256_and_si256 (lowMask, highMask);
+
+    //subtract
+    chunk = _mm256_subs_epu8 (chunk, lowMask);
+
+		//Store our 32 integers back to memory!
+		_mm256_storeu_si256 ((__m256i*)&(text[i]), chunk);
+
+	}
 }
 
-/////////////////
-//openMP - fastest version so far
-/////////////////
 static void toupper_openmp(char * text)
 {
     #pragma omp parallel for
     for(int k = 0; k<array_sz; k++)
     {
+      // The main idea here was to eliminate the branch prediction here and
+      // the unnecessary memory reads to the text array. The basic idea behind
+      // the code is to do a bit manipulation: we only need to a minus calculation
+      // when the read character is inside of the range of 96 and 123. The code works
+      // by using the MSB - most significant bit - of the resulting combination in
+      // logic operator:
+      // Assume the element we have read is 'a' which is 97 in ASCII.
+      // (96 - 97) & (97 - 123) = (-1) & (-26) = -26 in bitwise & operator. If you look
+      // at the binary representation of -26, you can see that it's MSB is 1. We then do
+      // do a shift arithmetic right operation with 7 - since chars are 8 bits - bits
+      // to carry the MSB over all the bits of the number. And then (-26) & (-32) results
+      // in (-32) hence we minus the value from the number.
+      // If we have read an already capital element like 'A' which is 65 in ASCII:
+      // (96 - 65) & (65 - 123) = (31) & (-58) = 6 with a 0 as MSB, then 0 & (-32) = 0
+      // hence we do not need to substract from the character.
       text[k] += (((96 - text[k]) & (text[k] - 123)) >> 7) & (-32);
     }
 }
@@ -111,120 +169,22 @@ static void toupper_assembly(char * text) {
     }
 }
 
-static void toupper_combined(char * text)
-{
-    // printf("opt size: %d ", array_sz);
-    __m128i array;
-
-    #pragma omp parallel for
-    for(int i = 0; i<array_sz; i = i+16)
-    {
-      array = _mm_load_si128((__m128i*)&text[i]);
-      uint8_t *val = (uint8_t*) &array;
-      //printf("--- %.16s\n", (char*)&array);
-
-        for(int k = 0; k< 16; k++)
-        {
-          text[i+k] += (((96 - val[k]) & (val[k] - 123)) >> 7) & (-32);
-        }
-    }
-}
-
-
-
-
-
-//   __m256i array;
-//   array = _mm256_load_si256((__m256i*)&text[0]);
-//   for(int k = 0; k<array_sz; k = k+32 )
-//   {
-// //      array = _mm256_load_si256((__m256i*)&text[k]);
-// //      printf("-%d- ---%s---\n", k, (char*)&array);
-// //       for(int i = 0; i< 32; i++)
-// //       {
-// //           if(text[i] > 96 && *text < 123)
-// //           {
-// //             text[i] -= 32;
-// //           }
-// //
-// // //        *(&array+i) += (((96 - *(&array+i)) & (*(&array+i) - 123)) >> 7) & (-32);
-// //
-// //       }
-//   }
-
-
-
-  // int i = 0;
-  // __m128i array;
-  //
-  //
-  // while(text[i] != '\0')
-  // {
-  //   i++;
-  //
-  //   // printf(" %c %i %i", text[i], &text[i], &text[i+1]);
-  //   // array = _mm_load_si128((__m128i*)&text[i]);
-  //   // printf("-%d- %s\n", i, (char*)&array);
-  //   //
-  //   // i = i+16;
-  //   // if (i > 100000)
-  //   // {
-  //   //   break;
-  //   // }
-  // };
-  // printf("strlen %d", i);
-
-  //#pragma omp for simd
+// static void toupper_combined(char * text)
+// {
+//     __m128i array;
 //
-// static void toupper_optimised(char * text) {
-//   while(*text != '\0') {
+//     #pragma omp parallel for
+//     for(int i = 0; i<array_sz; i = i+16)
+//     {
+//       array = _mm_load_si128((__m128i*)&text[i]);
+//       uint8_t *val = (uint8_t*) &array;
 //
-//
-//     *text += (((96 - *text) & (*text - 123)) >> 7) & (-32);
-//     text++;
-//     // The main idea here was to eliminate the branch prediction here and
-//     // the unnecessary memory reads to the text array. The basic idea behind
-//     // the code is to do a bit manipulation: we only need to a minus calculation
-//     // when the read character is inside of the range of 96 and 123. The code works
-//     // by using the MSB - most significant bit - of the resulting combination in
-//     // logic operator:
-//     // Assume the element we have read is 'a' which is 97 in ASCII.
-//     // (96 - 97) & (97 - 123) = (-1) & (-26) = -26 in bitwise & operator. If you look
-//     // at the binary representation of -26, you can see that it's MSB is 1. We then do
-//     // do a shift arithmetic right operation with 7 - since chars are 8 bits - bits
-//     // to carry the MSB over all the bits of the number. And then (-26) & (-32) results
-//     // in (-32) hence we minus the value from the number.
-//     // If we have read an already capital element like 'A' which is 65 in ASCII:
-//     // (96 - 65) & (65 - 123) = (31) & (-58) = 6 with a 0 as MSB, then 0 & (-32) = 0
-//     // hence we do not need to substract from the character.
-//   }
-//
-// static void toupper_optimised(char * text) {
-//     // to be implemented
-//       int upperBound, lowerBound;
-//       __m256i curr;
-//       int i = 0;
-//       __m256i lower = _mm256_cvtepi8_epi16(_mm_load_si128((__m128i*)96));
-//       printf("lower: %d", lower);
-//       __m256i upper = _mm256_cvtepi8_epi16(_mm_load_si128((__m128i*)123));
-//       printf("upper: %d", upper);
-//      /* while(text[i] != '\0')
-//       {
-//           curr = _mm256_cvtepi8_epi16(_mm_load_si128((__m128i*)text[i]));
-//           printf("curr: %d", curr);
-//           upperBound = _mm256_cvtsi256_si32 (_mm256_cmpgt_epi16 (curr, lower));
-//           lowerBound = _mm256_cvtsi256_si32 (_mm256_cmpgt_epi16(curr, upper));
-//           if( lowerBound && !upperBound )
-//           {
-//               text[i] -= 32;
-//           }
-//           i++;
-//       }
-//   }*/
+//         for(int k = 0; k< 16; k++)
+//         {
+//           text[i+k] += (((96 - val[k]) & (val[k] - 123)) >> 7) & (-32);
+//         }
+//     }
 // }
-/*****************************************************************/
-
-
 
 
 // align at 16byte boundaries
@@ -295,11 +255,12 @@ struct _toupperversion {
     const char* name;
     toupperfunc func;
 } toupperversion[] = {
-    { "sim",    toupper_simple },
-    { "omp", toupper_openmp },
-    { "ass", toupper_assembly },
-    { "intr", toupper_intrinsics },
-    { "combined", toupper_combined },
+    { "simple",    toupper_simple },
+    { "bytes", toupper_bytes },
+    { "openMP", toupper_openmp },
+    { "assembly", toupper_assembly },
+    { "intrinsics", toupper_intrinsics },
+    // { "combined", toupper_combined },
     { 0,0 }
 };
 
