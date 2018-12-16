@@ -300,6 +300,27 @@ static void toupper_openmp(char * text)
     }
 }
 
+static void toupper_openmp_1_thr(char * text)
+{
+    #pragma omp parallel for num_threads(1)
+    for(int k = 0; k<array_sz; k++)
+      text[k] += (((96 - text[k]) & (text[k] - 123)) >> 7) & (-32);
+}
+
+static void toupper_openmp_2_thr(char * text)
+{
+    #pragma omp parallel for num_threads(2)
+    for(int k = 0; k<array_sz; k++)
+      text[k] += (((96 - text[k]) & (text[k] - 123)) >> 7) & (-32);
+}
+
+static void toupper_openmp_4_thr(char * text)
+{
+    #pragma omp parallel for num_threads(4)
+    for(int k = 0; k<array_sz; k++)
+      text[k] += (((96 - text[k]) & (text[k] - 123)) >> 7) & (-32);
+}
+
 // inline assembly code
 static void toupper_assembly(char * text) {
     int sub, i = 0;
@@ -406,6 +427,9 @@ struct _toupperversion {
     { "combined_1_thr", toupper_combined_1_thr },
     { "combined_2_thr", toupper_combined_2_thr },
     { "combined_4_thr", toupper_combined_4_thr },
+    { "openMP_1_thr", toupper_openmp_1_thr },
+    { "openMP_2_thr", toupper_openmp_2_thr },
+    { "openMP_4_thr", toupper_openmp_4_thr },
     { 0,0 }
 };
 
