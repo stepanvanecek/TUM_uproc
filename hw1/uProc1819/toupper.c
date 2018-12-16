@@ -41,23 +41,27 @@ double gettime(void) {
 	// return ((double)TV.tv_sec);
 }
 
+static void toupper_naive(char * text) {
 
+  int i = 0;
+  while(text[i] != '\0') {
+
+    if(text[i] > 96 && *text < 123)
+    {
+      text[i] -= 32;
+    }
+    i++;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+// simple
+////////////////////////////////////////////////////////////////////////////////////
 static void toupper_simple(char * text) {
   for(int k = 0; k<array_sz; k++)
   {
     text[k] += (((96 - text[k]) & (text[k] - 123)) >> 7) & (-32);
   }
-
-
-  // int i = 0;
-  // while(text[i] != '\0') {
-  //
-  //   if(text[i] > 96 && *text < 123)
-  //   {
-  //     text[i] -= 32;
-  //   }
-  //   i++;
-  // }
 }
 
 static void toupper_bytes(char * text)
@@ -88,8 +92,163 @@ static void toupper_intrinsics(char * text)
 	__m256i highLimit = _mm256_set1_epi8 (0x7b); //z+1
   __m256i modifier = _mm256_set1_epi8 (0x20); //=32
 
+	//for every 32 characters
+	for(int i = 0; i < array_sz; i=i+32)
+	{
+
+		//fetch 32 characters from memory (265 bits)
+		chunk = _mm256_loadu_si256 ((__m256i*)&(text[i]));
+
+		//Compare characters with 'a-1': chunk > a-1 ?
+    //store ones if bigger than 'a-1'
+    __m256i lowMask = _mm256_cmpgt_epi8 (chunk, lowLimit);
+
+		//Compare characters with 'z+1': z+1 > chunk ?
+    //store ones if smaller than 'z+1'
+    __m256i highMask = _mm256_cmpgt_epi8 (highLimit, chunk);
+
+    //mask to 32 where it is a lower case
+    lowMask = _mm256_and_si256 (modifier, lowMask);
+    lowMask = _mm256_and_si256 (lowMask, highMask);
+
+    //subtract
+    chunk = _mm256_subs_epu8 (chunk, lowMask);
+
+		//Store our 32 integers back to memory!
+		_mm256_storeu_si256 ((__m256i*)&(text[i]), chunk);
+
+	}
+}
+
+static void toupper_combined(char * text)
+{
+
+	__m256i chunk;
+
+	//Load constants
+	__m256i lowLimit = _mm256_set1_epi8 (0x60); //a-1
+	__m256i highLimit = _mm256_set1_epi8 (0x7b); //z+1
+  __m256i modifier = _mm256_set1_epi8 (0x20); //=32
 
 	//for every 32 characters
+  #pragma omp parallel for
+	for(int i = 0; i < array_sz; i=i+32)
+	{
+
+		//fetch 32 characters from memory (265 bits)
+		chunk = _mm256_loadu_si256 ((__m256i*)&(text[i]));
+
+		//Compare characters with 'a-1': chunk > a-1 ?
+    //store ones if bigger than 'a-1'
+    __m256i lowMask = _mm256_cmpgt_epi8 (chunk, lowLimit);
+
+		//Compare characters with 'z+1': z+1 > chunk ?
+    //store ones if smaller than 'z+1'
+    __m256i highMask = _mm256_cmpgt_epi8 (highLimit, chunk);
+
+    //mask to 32 where it is a lower case
+    lowMask = _mm256_and_si256 (modifier, lowMask);
+    lowMask = _mm256_and_si256 (lowMask, highMask);
+
+    //subtract
+    chunk = _mm256_subs_epu8 (chunk, lowMask);
+
+		//Store our 32 integers back to memory!
+		_mm256_storeu_si256 ((__m256i*)&(text[i]), chunk);
+
+	}
+}
+
+static void toupper_combined_1_thr(char * text)
+{
+
+	__m256i chunk;
+
+	//Load constants
+	__m256i lowLimit = _mm256_set1_epi8 (0x60); //a-1
+	__m256i highLimit = _mm256_set1_epi8 (0x7b); //z+1
+  __m256i modifier = _mm256_set1_epi8 (0x20); //=32
+
+	//for every 32 characters
+  #pragma omp parallel for num_threads(1)
+	for(int i = 0; i < array_sz; i=i+32)
+	{
+
+		//fetch 32 characters from memory (265 bits)
+		chunk = _mm256_loadu_si256 ((__m256i*)&(text[i]));
+
+		//Compare characters with 'a-1': chunk > a-1 ?
+    //store ones if bigger than 'a-1'
+    __m256i lowMask = _mm256_cmpgt_epi8 (chunk, lowLimit);
+
+		//Compare characters with 'z+1': z+1 > chunk ?
+    //store ones if smaller than 'z+1'
+    __m256i highMask = _mm256_cmpgt_epi8 (highLimit, chunk);
+
+    //mask to 32 where it is a lower case
+    lowMask = _mm256_and_si256 (modifier, lowMask);
+    lowMask = _mm256_and_si256 (lowMask, highMask);
+
+    //subtract
+    chunk = _mm256_subs_epu8 (chunk, lowMask);
+
+		//Store our 32 integers back to memory!
+		_mm256_storeu_si256 ((__m256i*)&(text[i]), chunk);
+
+	}
+}
+
+static void toupper_combined_2_thr(char * text)
+{
+
+	__m256i chunk;
+
+	//Load constants
+	__m256i lowLimit = _mm256_set1_epi8 (0x60); //a-1
+	__m256i highLimit = _mm256_set1_epi8 (0x7b); //z+1
+  __m256i modifier = _mm256_set1_epi8 (0x20); //=32
+
+	//for every 32 characters
+  #pragma omp parallel for num_threads(2)
+	for(int i = 0; i < array_sz; i=i+32)
+	{
+
+		//fetch 32 characters from memory (265 bits)
+		chunk = _mm256_loadu_si256 ((__m256i*)&(text[i]));
+
+		//Compare characters with 'a-1': chunk > a-1 ?
+    //store ones if bigger than 'a-1'
+    __m256i lowMask = _mm256_cmpgt_epi8 (chunk, lowLimit);
+
+		//Compare characters with 'z+1': z+1 > chunk ?
+    //store ones if smaller than 'z+1'
+    __m256i highMask = _mm256_cmpgt_epi8 (highLimit, chunk);
+
+    //mask to 32 where it is a lower case
+    lowMask = _mm256_and_si256 (modifier, lowMask);
+    lowMask = _mm256_and_si256 (lowMask, highMask);
+
+    //subtract
+    chunk = _mm256_subs_epu8 (chunk, lowMask);
+
+		//Store our 32 integers back to memory!
+		_mm256_storeu_si256 ((__m256i*)&(text[i]), chunk);
+
+	}
+}
+
+static void toupper_combined_4_thr(char * text)
+{
+
+	__m256i chunk;
+
+	//Load constants
+	__m256i lowLimit = _mm256_set1_epi8 (0x60); //a-1
+	__m256i highLimit = _mm256_set1_epi8 (0x7b); //z+1
+  __m256i modifier = _mm256_set1_epi8 (0x20); //=32
+
+	//for every 32 characters
+  #pragma omp parallel for num_threads(4)
 	for(int i = 0; i < array_sz; i=i+32)
 	{
 
@@ -169,24 +328,6 @@ static void toupper_assembly(char * text) {
     }
 }
 
-// static void toupper_combined(char * text)
-// {
-//     __m128i array;
-//
-//     #pragma omp parallel for
-//     for(int i = 0; i<array_sz; i = i+16)
-//     {
-//       array = _mm_load_si128((__m128i*)&text[i]);
-//       uint8_t *val = (uint8_t*) &array;
-//
-//         for(int k = 0; k< 16; k++)
-//         {
-//           text[i+k] += (((96 - val[k]) & (val[k] - 123)) >> 7) & (-32);
-//         }
-//     }
-// }
-
-
 // align at 16byte boundaries
 void* mymalloc(unsigned long int size)
 {
@@ -255,12 +396,16 @@ struct _toupperversion {
     const char* name;
     toupperfunc func;
 } toupperversion[] = {
-    { "simple",    toupper_simple },
+    { "naive", toupper_naive },
+    { "simple", toupper_simple },
     { "bytes", toupper_bytes },
-    { "openMP", toupper_openmp },
     { "assembly", toupper_assembly },
+    { "openMP", toupper_openmp },
     { "intrinsics", toupper_intrinsics },
-    // { "combined", toupper_combined },
+    { "combined", toupper_combined },
+    { "combined_1_thr", toupper_combined_1_thr },
+    { "combined_2_thr", toupper_combined_2_thr },
+    { "combined_4_thr", toupper_combined_4_thr },
     { 0,0 }
 };
 
