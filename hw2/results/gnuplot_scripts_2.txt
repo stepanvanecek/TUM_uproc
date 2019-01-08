@@ -1,0 +1,27 @@
+set term png
+set key autotitle columnhead
+
+name="graph1"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1' using 2:4 title 'x' with linespoints
+
+name="graph2"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results2' using 2:4 title 'x' with linespoints
+
+name="graph3"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results3' using 2:4 title 'x' with linespoints
+
+name="graph4"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results4' using 2:4 title 'x' with linespoints
+
+name="graph5"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results5' using 2:4 title 'x' with linespoints
