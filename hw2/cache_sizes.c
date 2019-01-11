@@ -8,28 +8,6 @@ static inline double gettime(void) {
   return (tp.tv_sec * 1000000000 + tp.tv_nsec) >> 10;
 }
 
-char ** array_init(int array_size, int cache_line_len)
-{
-  char ** arr = malloc(sizeof(char*)*(array_size));
-  for(int i = 0; i< array_size; i++)
-  {
-    arr[i] = malloc(sizeof(char)*(cache_line_len));
-    arr[i][0] = rand()%256;
-  }
-
-
-  return arr;
-}
-
-int array_destroy(char ** destroyed_array, int array_size)
-{
-  for(int i = 0; i < array_size; i++)
-    free(destroyed_array[i]);
-  free(destroyed_array);
-
-  return 0;
-}
-
 int * create_random_sequence(int num_elements)
 {
   int * large_array = malloc(sizeof(int)*(2 * num_elements));
@@ -56,6 +34,34 @@ int * create_random_sequence(int num_elements)
 
   free(large_array);
   return random_order_array;
+}
+
+int ** array_init(int array_size, int cache_line_len)
+{
+  int ** arr = malloc(sizeof(int*)*(array_size));
+  for(int i = 0; i< array_size; i++)
+    arr[i] = malloc(cache_line_len);
+
+  int * random_sequence = create_random_sequence(array_size);
+
+  int curr_index = random_sequence[array_size-1];
+  for(int i = 0; i< array_size; i++)
+  {
+    arr[curr_index][0] = random_sequence[i];
+    curr_index = random_sequence[i];
+  }
+
+  free(random_sequence);
+  return arr;
+}
+
+int array_destroy(int ** destroyed_array, int array_size)
+{
+  for(int i = 0; i < array_size; i++)
+    free(destroyed_array[i]);
+  free(destroyed_array);
+
+  return 0;
 }
 
 int main(int argc, char ** argv)
@@ -85,9 +91,12 @@ int main(int argc, char ** argv)
     total_steps = atoi(argv[6]);
   }
 
-  int arr_sum;
+  int next_index;
   double start_time, stop_time, abs_time, avg_time;
 
+  // int ** array = array_init(12, 128);
+  // for(int i = 0; i<12; i++)
+  //   printf("%d ", array[i][0]);
 
 
   //loop over strides = N
@@ -97,23 +106,20 @@ int main(int argc, char ** argv)
 
     for(int j = 0; j < repeat; j++)
     {
-        //random order
-        int * random_order_array = create_random_sequence(curr_array_sz);
-
-        char ** array = array_init(curr_array_sz, cache_line_length);
-        arr_sum = 0;
+        //returns array of **curr_array_sz** elements with index of ne
+        int ** array = array_init(curr_array_sz, cache_line_length);
+        next_index = 0;
 
         start_time = gettime();
         //access elems of array with stride i
         for(int k = 0; k < total_steps; k++)
-          arr_sum += array[random_order_array[k%curr_array_sz]][0];
+          next_index = array[next_index][0];
 
         stop_time = gettime();
 
         abs_time = stop_time - start_time;
         avg_time += abs_time;
 
-        free(random_order_array);
         array_destroy(array, curr_array_sz);
     }
     avg_time = avg_time / repeat;

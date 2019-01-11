@@ -31,3 +31,13 @@ name="ex2-graph1"
 set output sprintf("%s.png", name)
 set title sprintf("%s", name)
 plot 'ex2-results1' using 2:4 title 'x' with linespoints
+
+name="ex2-graph2"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'ex2-results2' using 2:4 title 'x' with linespoints
+
+name="ex2-graph3"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'ex2-results3' using 2:4 title 'x' with linespoints

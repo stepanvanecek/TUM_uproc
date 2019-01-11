@@ -38,6 +38,17 @@ ex2_compile:
 	/usr/local/Cellar/gcc/8.2.0/bin/gcc-8 -lm -march=native -O0 cache_sizes.c -o cache_sizes
 
 ex2_run:
-	./cache_sizes 128 10 1000 10 64 1000000 > results/ex2-results1
+	#0 - 1000
+	./cache_sizes 128 10 1000 10 32 1000000 > results/ex2-results1
 	@echo ""
 	#cat results/ex2-results1
+
+	#0 - 5000
+	./cache_sizes 128 50 5000 50 32 1000000 > results/ex2-results2
+	@echo ""
+	#cat results/ex2-results2
+
+	#0 - 40000
+	./cache_sizes 128 400 40000 400 32 1000000 > results/ex2-results3
+	@echo ""
+	#cat results/ex2-results3
