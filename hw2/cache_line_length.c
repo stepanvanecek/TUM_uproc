@@ -95,5 +95,7 @@ int main(int argc, char** argv)
 
   }
 
+  free(array);
+  free(flush_array);
   return 0;
 }
