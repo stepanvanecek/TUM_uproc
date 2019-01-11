@@ -1,5 +1,6 @@
 set term png
 set key autotitle columnhead
+set grid
 
 name="ex1-graph1"
 set output sprintf("%s.png", name)

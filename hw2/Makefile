@@ -15,19 +15,19 @@ ex1_compile:
 
 ex1_run:
 	./cache_line_length 16000000 1 10000 100 32 > results/ex1-results1
-	@echo ""
+	@echo "ex1 run1 completed"
 	#cat results/ex1-results1
 	./cache_line_length 16000000 1 1000 10 64 > results/ex1-results2
-	@echo ""
+	@echo "ex1 run2 completed"
 	#cat results/ex1-results2
 	./cache_line_length 16000000 1 500 5 64 > results/ex1-results3
-	@echo ""
+	@echo "ex1 run3 completed"
 	#cat results/ex1-results3
 	./cache_line_length 16000000 30 250 3 128 > results/ex1-results4
-	@echo ""
+	@echo "ex1 run4 completed"
 	#cat results/ex1-results4
 	./cache_line_length 16000000 100 150 1 128 > results/ex1-results5
-	@echo ""
+	@echo "ex1 run5 completed"
 	#cat results/ex1-results5
 
 plot:
@@ -39,16 +39,16 @@ ex2_compile:
 
 ex2_run:
 	#0 - 1000
-	./cache_sizes 128 10 1000 10 32 1000000 > results/ex2-results1
-	@echo ""
+	./cache_sizes 128 10 1000 10 128 1000000 > results/ex2-results1
+	@echo "ex2 run1 completed"
 	#cat results/ex2-results1
 
 	#0 - 5000
-	./cache_sizes 128 50 5000 50 32 1000000 > results/ex2-results2
-	@echo ""
+	./cache_sizes 128 50 5000 50 128 1000000 > results/ex2-results2
+	@echo "ex2 run2 completed"
 	#cat results/ex2-results2
 
 	#0 - 40000
-	./cache_sizes 128 400 40000 400 32 1000000 > results/ex2-results3
-	@echo ""
+	./cache_sizes 128 400 40000 400 128 1000000 > results/ex2-results3
+	@echo "ex2 run3 completed"
 	#cat results/ex2-results3
