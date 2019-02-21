@@ -1,0 +1,223 @@
+set term png
+
+#########for all
+name="all-o0"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1' using 2:8 title 'naive' with linespoints, \
+'' using 2:10 title 'simple'  with linespoints, \
+'' using 2:12 title 'bytes'  with linespoints, \
+'' using 2:14 title 'assembly'  with linespoints, \
+'' using 2:16 title 'open-mp' with linespoints, \
+'' using 2:18 title 'intrinsics' with linespoints, \
+'' using 2:20 title 'combined' with linespoints, \
+'' using 2:22 title 'combined-1-thr' with linespoints, \
+'' using 2:24 title 'combined-2-thr' with linespoints, \
+'' using 2:26 title 'combined-4-thr' with linespoints, \
+'' using 2:28 title 'openMP-1-thr' with linespoints, \
+'' using 2:30 title 'openMP-2-thr' with linespoints, \
+'' using 2:32 title 'openMP-4-thr' with linespoints
+
+name="all-o1"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results2' using 2:8 title 'naive' with linespoints, \
+'' using 2:10 title 'simple'  with linespoints, \
+'' using 2:12 title 'bytes'  with linespoints, \
+'' using 2:14 title 'assembly'  with linespoints, \
+'' using 2:16 title 'open-mp' with linespoints, \
+'' using 2:18 title 'intrinsics' with linespoints, \
+'' using 2:20 title 'combined' with linespoints, \
+'' using 2:22 title 'combined-1-thr' with linespoints, \
+'' using 2:24 title 'combined-2-thr' with linespoints, \
+'' using 2:26 title 'combined-4-thr' with linespoints, \
+'' using 2:28 title 'openMP-1-thr' with linespoints, \
+'' using 2:30 title 'openMP-2-thr' with linespoints, \
+'' using 2:32 title 'openMP-4-thr' with linespoints
+
+name="all-o2"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results3' using 2:8 title 'naive' with linespoints, \
+'' using 2:10 title 'simple'  with linespoints, \
+'' using 2:12 title 'bytes'  with linespoints, \
+'' using 2:14 title 'assembly'  with linespoints, \
+'' using 2:16 title 'open-mp' with linespoints, \
+'' using 2:18 title 'intrinsics' with linespoints, \
+'' using 2:20 title 'combined' with linespoints, \
+'' using 2:22 title 'combined-1-thr' with linespoints, \
+'' using 2:24 title 'combined-2-thr' with linespoints, \
+'' using 2:26 title 'combined-4-thr' with linespoints, \
+'' using 2:28 title 'openMP-1-thr' with linespoints, \
+'' using 2:30 title 'openMP-2-thr' with linespoints, \
+'' using 2:32 title 'openMP-4-thr' with linespoints
+
+name="all-o3"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results4' using 2:8 title 'naive' with linespoints, \
+'' using 2:10 title 'simple'  with linespoints, \
+'' using 2:12 title 'bytes'  with linespoints, \
+'' using 2:14 title 'assembly'  with linespoints, \
+'' using 2:16 title 'open-mp' with linespoints, \
+'' using 2:18 title 'intrinsics' with linespoints, \
+'' using 2:20 title 'combined' with linespoints, \
+'' using 2:22 title 'combined-1-thr' with linespoints, \
+'' using 2:24 title 'combined-2-thr' with linespoints, \
+'' using 2:26 title 'combined-4-thr' with linespoints, \
+'' using 2:28 title 'openMP-1-thr' with linespoints, \
+'' using 2:30 title 'openMP-2-thr' with linespoints, \
+'' using 2:32 title 'openMP-4-thr' with linespoints
+
+#########for fast algs
+name="fast-alg-o0"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1_fast' using 2:8 title 'open-mp' with linespoints, \
+'' using 2:10 title 'intrinsics'  with linespoints, \
+'' using 2:12 title 'combined'  with linespoints, \
+'' using 2:14 title 'combined-4-thr'  with linespoints, \
+'' using 2:16 title 'openmp-4-thr' with linespoints
+
+name="fast-alg-o1"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results2_fast' using 2:8 title 'open-mp' with linespoints, \
+'' using 2:10 title 'intrinsics'  with linespoints, \
+'' using 2:12 title 'combined'  with linespoints, \
+'' using 2:14 title 'combined-4-thr'  with linespoints, \
+'' using 2:16 title 'openmp-4-thr' with linespoints
+
+name="fast-alg-o2"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results3_fast' using 2:8 title 'open-mp' with linespoints, \
+'' using 2:10 title 'intrinsics'  with linespoints, \
+'' using 2:12 title 'combined'  with linespoints, \
+'' using 2:14 title 'combined-4-thr'  with linespoints, \
+'' using 2:16 title 'openmp-4-thr' with linespoints
+
+name="fast-alg-o3"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results4_fast' using 2:8 title 'open-mp' with linespoints, \
+'' using 2:10 title 'intrinsics'  with linespoints, \
+'' using 2:12 title 'combined'  with linespoints, \
+'' using 2:14 title 'combined-4-thr'  with linespoints, \
+'' using 2:16 title 'openmp-4-thr' with linespoints
+
+
+###algorithms with different optimisation
+name="naive"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1' using 2:8 title '-o0' with linespoints, \
+'results2' using 2:8 title '-o1' with linespoints, \
+'results3' using 2:8 title '-o2' with linespoints, \
+'results4' using 2:8 title '-o3' with linespoints
+
+name="simple"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1' using 2:10 title '-o0' with linespoints, \
+'results2' using 2:10 title '-o1' with linespoints, \
+'results3' using 2:10 title '-o2' with linespoints, \
+'results4' using 2:10 title '-o3' with linespoints
+
+name="bytes"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1' using 2:12 title '-o0' with linespoints, \
+'results2' using 2:12 title '-o1' with linespoints, \
+'results3' using 2:12 title '-o2' with linespoints, \
+'results4' using 2:12 title '-o3' with linespoints
+
+name="assembly"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1' using 2:14 title '-o0' with linespoints, \
+'results2' using 2:14 title '-o1' with linespoints, \
+'results3' using 2:14 title '-o2' with linespoints, \
+'results4' using 2:14 title '-o3' with linespoints
+
+#16
+name="open-mp"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1_fast' using 2:8 title '-o0' with linespoints, \
+'results2_fast' using 2:8 title '-o1' with linespoints, \
+'results3_fast' using 2:8 title '-o2' with linespoints, \
+'results4_fast' using 2:8 title '-o3' with linespoints
+
+#18
+name="intrinsics"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1_fast' using 2:10 title '-o0' with linespoints, \
+'results2_fast' using 2:10 title '-o1' with linespoints, \
+'results3_fast' using 2:10 title '-o2' with linespoints, \
+'results4_fast' using 2:10 title '-o3' with linespoints
+
+#20
+name="combined"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1_fast' using 2:12 title '-o0' with linespoints, \
+'results2_fast' using 2:12 title '-o1' with linespoints, \
+'results3_fast' using 2:12 title '-o2' with linespoints, \
+'results4_fast' using 2:12 title '-o3' with linespoints
+
+name="combined-1-thr"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1' using 2:22 title '-o0' with linespoints, \
+'results2' using 2:22 title '-o1' with linespoints, \
+'results3' using 2:22 title '-o2' with linespoints, \
+'results4' using 2:22 title '-o3' with linespoints
+
+name="combined-2-thr"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1' using 2:24 title '-o0' with linespoints, \
+'results2' using 2:24 title '-o1' with linespoints, \
+'results3' using 2:24 title '-o2' with linespoints, \
+'results4' using 2:24 title '-o3' with linespoints
+
+#26
+name="combined-4-thr"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1_fast' using 2:14 title '-o0' with linespoints, \
+'results2_fast' using 2:14 title '-o1' with linespoints, \
+'results3_fast' using 2:14 title '-o2' with linespoints, \
+'results4_fast' using 2:14 title '-o3' with linespoints
+
+name="open-mp-1-thr"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1' using 2:28 title '-o0' with linespoints, \
+'results2' using 2:28 title '-o1' with linespoints, \
+'results3' using 2:28 title '-o2' with linespoints, \
+'results4' using 2:28 title '-o3' with linespoints
+
+name="open-mp-2-thr"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1' using 2:30 title '-o0' with linespoints, \
+'results2' using 2:30 title '-o1' with linespoints, \
+'results3' using 2:30 title '-o2' with linespoints, \
+'results4' using 2:30 title '-o3' with linespoints
+
+#32
+name="open-mp-4-thr"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'results1_fast' using 2:16 title '-o0' with linespoints, \
+'results2_fast' using 2:16 title '-o1' with linespoints, \
+'results3_fast' using 2:16 title '-o2' with linespoints, \
+'results4_fast' using 2:16 title '-o3' with linespoints
+
+
+
+
+

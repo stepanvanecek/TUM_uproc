@@ -1,0 +1,59 @@
+set term png
+set key autotitle columnhead
+set grid
+
+name="ex1-graph1"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'ex1-results1' using 2:4 title 'stride [B]' with linespoints
+
+name="ex1-graph2"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'ex1-results2' using 2:4 title 'stride [B]' with linespoints
+
+name="ex1-graph3"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'ex1-results3' using 2:4 title 'stride [B]' with linespoints
+
+name="ex1-graph4"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'ex1-results4' using 2:4 title 'stride [B]' with linespoints
+
+name="ex1-graph5"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'ex1-results5' using 2:4 title 'stride [B]' with linespoints
+
+#####
+name="ex2-graph1"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'ex2-results1' using 2:4 title 'cache lines [128B]' with linespoints
+
+name="ex2-graph2"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'ex2-results2' using 2:4 title 'cache lines [128B]' with linespoints
+
+name="ex2-graph3"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'ex2-results3' using 2:4 title 'cache lines [128B]' with linespoints
+
+name="ex2-graph4"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'ex2-results4' using 2:4 title 'cache lines [64B]' with linespoints
+
+name="ex2-graph5"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'ex2-results5' using 2:4 title 'cache lines [64B]' with linespoints
+
+name="ex2-graph6"
+set output sprintf("%s.png", name)
+set title sprintf("%s", name)
+plot 'ex2-results6' using 2:4 title 'cache lines [64B]' with linespoints
