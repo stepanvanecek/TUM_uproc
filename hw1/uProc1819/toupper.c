@@ -5,6 +5,11 @@
 #include <sys/time.h>
 #include "options.h"
 
+#include <immintrin.h>
+// #include "nmmintrin.h" // for SSE4.2
+// #include "immintrin.h" // for AVX
+
+//int gettimeofday(struct timeval *tv, struct timezone *tz);
 
 int debug = 0;
 double *results;
@@ -12,48 +17,337 @@ double *ratios;
 unsigned long   *sizes;
 
 int no_sz = 1, no_ratio =1, no_version=1;
+int array_sz = 0;
 
 
 
-static inline double gettime(void) {
-	
-	//Use the gettimeofday system call function (see gettimeofday documentation)
-	struct timeval tm;
-	gettimeofday(&tm, NULL);
+static inline
+double gettime(void) {
 
-	//Get the time in microseconds
-	return tm.tv_usec;
-	
+  struct timespec tp;
+  clock_gettime(CLOCK_REALTIME, &tp);
+  return (tp.tv_sec * 1000000000 + tp.tv_nsec) >> 10;
+
+	// struct timeval TV;
+	// struct timezone TZ;
+  //
+	// const int RC = gettimeofday(&TV, &TZ);
+	// if (RC == -1) {
+	// 	printf("ERROR: Bad call to gettimeofday\n");
+	// 	return(-1);
+	// }
+  //
+	// //return( ((double)TV.tv_sec) + kMicro * ((double)TV.tv_usec) );
+	// return ((double)TV.tv_sec);
 }
 
+static void toupper_naive(char * text) {
 
-//Uses the ASCII table to turn a lower case to upper case character
+  int i = 0;
+  while(text[i] != '\0') {
+
+    if(text[i] > 96 && *text < 123)
+    {
+      text[i] -= 32;
+    }
+    i++;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+// simple
+////////////////////////////////////////////////////////////////////////////////////
 static void toupper_simple(char * text) {
-  
-  	int i=0;
+  for(int k = 0; k<array_sz; k++)
+  {
+    text[k] += (((96 - text[k]) & (text[k] - 123)) >> 7) & (-32);
+  }
+}
 
-  	//Iterate for the entire string
-	while(text[i] !=  '\0'){
-		//Check if the character is indeed a lower case character (alternatively use ASCII code)
-		if(text[i] >= 'a' && text[i] <= 'z'){
-			// Take the capital version of the letter
-			text[i] = text[i] - 32;
-		}
+static void toupper_bytes(char * text)
+{
+  char lowLimit = 0x60;
+  char highLimit = 0x7b;
 
+  for(int i = 0; i<array_sz; i = i+1)
+  {
+    char lowMask = ( text[i] > lowLimit ) ? 0xFF : 0;
+    char highMask = ( highLimit > text[i] ) ? 0xFF : 0;
+    char modifier = 0x20;
 
-		//next character
-		i++;
+    modifier = modifier & lowMask;
+    modifier = modifier & highMask;
+
+    text[i] = text[i] - modifier;
+  }
+}
+
+static void toupper_intrinsics(char * text)
+{
+
+	__m256i chunk;
+
+	//Load constants
+	__m256i lowLimit = _mm256_set1_epi8 (0x60); //a-1
+	__m256i highLimit = _mm256_set1_epi8 (0x7b); //z+1
+  __m256i modifier = _mm256_set1_epi8 (0x20); //=32
+
+	//for every 32 characters
+	for(int i = 0; i < array_sz; i=i+32)
+	{
+
+		//fetch 32 characters from memory (265 bits)
+		chunk = _mm256_loadu_si256 ((__m256i*)&(text[i]));
+
+		//Compare characters with 'a-1': chunk > a-1 ?
+    //store ones if bigger than 'a-1'
+    __m256i lowMask = _mm256_cmpgt_epi8 (chunk, lowLimit);
+
+		//Compare characters with 'z+1': z+1 > chunk ?
+    //store ones if smaller than 'z+1'
+    __m256i highMask = _mm256_cmpgt_epi8 (highLimit, chunk);
+
+    //mask to 32 where it is a lower case
+    lowMask = _mm256_and_si256 (modifier, lowMask);
+    lowMask = _mm256_and_si256 (lowMask, highMask);
+
+    //subtract
+    chunk = _mm256_subs_epu8 (chunk, lowMask);
+
+		//Store our 32 integers back to memory!
+		_mm256_storeu_si256 ((__m256i*)&(text[i]), chunk);
+
 	}
 }
 
+static void toupper_combined(char * text)
+{
 
-static void toupper_optimised(char * text) {
-  // to be implemented
+	__m256i chunk;
+
+	//Load constants
+	__m256i lowLimit = _mm256_set1_epi8 (0x60); //a-1
+	__m256i highLimit = _mm256_set1_epi8 (0x7b); //z+1
+  __m256i modifier = _mm256_set1_epi8 (0x20); //=32
+
+	//for every 32 characters
+  #pragma omp parallel for
+	for(int i = 0; i < array_sz; i=i+32)
+	{
+
+		//fetch 32 characters from memory (265 bits)
+		chunk = _mm256_loadu_si256 ((__m256i*)&(text[i]));
+
+		//Compare characters with 'a-1': chunk > a-1 ?
+    //store ones if bigger than 'a-1'
+    __m256i lowMask = _mm256_cmpgt_epi8 (chunk, lowLimit);
+
+		//Compare characters with 'z+1': z+1 > chunk ?
+    //store ones if smaller than 'z+1'
+    __m256i highMask = _mm256_cmpgt_epi8 (highLimit, chunk);
+
+    //mask to 32 where it is a lower case
+    lowMask = _mm256_and_si256 (modifier, lowMask);
+    lowMask = _mm256_and_si256 (lowMask, highMask);
+
+    //subtract
+    chunk = _mm256_subs_epu8 (chunk, lowMask);
+
+		//Store our 32 integers back to memory!
+		_mm256_storeu_si256 ((__m256i*)&(text[i]), chunk);
+
+	}
 }
 
+static void toupper_combined_1_thr(char * text)
+{
 
-/*****************************************************************/
-//Utility functions
+	__m256i chunk;
+
+	//Load constants
+	__m256i lowLimit = _mm256_set1_epi8 (0x60); //a-1
+	__m256i highLimit = _mm256_set1_epi8 (0x7b); //z+1
+  __m256i modifier = _mm256_set1_epi8 (0x20); //=32
+
+	//for every 32 characters
+  #pragma omp parallel for num_threads(1)
+	for(int i = 0; i < array_sz; i=i+32)
+	{
+
+		//fetch 32 characters from memory (265 bits)
+		chunk = _mm256_loadu_si256 ((__m256i*)&(text[i]));
+
+		//Compare characters with 'a-1': chunk > a-1 ?
+    //store ones if bigger than 'a-1'
+    __m256i lowMask = _mm256_cmpgt_epi8 (chunk, lowLimit);
+
+		//Compare characters with 'z+1': z+1 > chunk ?
+    //store ones if smaller than 'z+1'
+    __m256i highMask = _mm256_cmpgt_epi8 (highLimit, chunk);
+
+    //mask to 32 where it is a lower case
+    lowMask = _mm256_and_si256 (modifier, lowMask);
+    lowMask = _mm256_and_si256 (lowMask, highMask);
+
+    //subtract
+    chunk = _mm256_subs_epu8 (chunk, lowMask);
+
+		//Store our 32 integers back to memory!
+		_mm256_storeu_si256 ((__m256i*)&(text[i]), chunk);
+
+	}
+}
+
+static void toupper_combined_2_thr(char * text)
+{
+
+	__m256i chunk;
+
+	//Load constants
+	__m256i lowLimit = _mm256_set1_epi8 (0x60); //a-1
+	__m256i highLimit = _mm256_set1_epi8 (0x7b); //z+1
+  __m256i modifier = _mm256_set1_epi8 (0x20); //=32
+
+	//for every 32 characters
+  #pragma omp parallel for num_threads(2)
+	for(int i = 0; i < array_sz; i=i+32)
+	{
+
+		//fetch 32 characters from memory (265 bits)
+		chunk = _mm256_loadu_si256 ((__m256i*)&(text[i]));
+
+		//Compare characters with 'a-1': chunk > a-1 ?
+    //store ones if bigger than 'a-1'
+    __m256i lowMask = _mm256_cmpgt_epi8 (chunk, lowLimit);
+
+		//Compare characters with 'z+1': z+1 > chunk ?
+    //store ones if smaller than 'z+1'
+    __m256i highMask = _mm256_cmpgt_epi8 (highLimit, chunk);
+
+    //mask to 32 where it is a lower case
+    lowMask = _mm256_and_si256 (modifier, lowMask);
+    lowMask = _mm256_and_si256 (lowMask, highMask);
+
+    //subtract
+    chunk = _mm256_subs_epu8 (chunk, lowMask);
+
+		//Store our 32 integers back to memory!
+		_mm256_storeu_si256 ((__m256i*)&(text[i]), chunk);
+
+	}
+}
+
+static void toupper_combined_4_thr(char * text)
+{
+
+	__m256i chunk;
+
+	//Load constants
+	__m256i lowLimit = _mm256_set1_epi8 (0x60); //a-1
+	__m256i highLimit = _mm256_set1_epi8 (0x7b); //z+1
+  __m256i modifier = _mm256_set1_epi8 (0x20); //=32
+
+	//for every 32 characters
+  #pragma omp parallel for num_threads(4)
+	for(int i = 0; i < array_sz; i=i+32)
+	{
+
+		//fetch 32 characters from memory (265 bits)
+		chunk = _mm256_loadu_si256 ((__m256i*)&(text[i]));
+
+		//Compare characters with 'a-1': chunk > a-1 ?
+    //store ones if bigger than 'a-1'
+    __m256i lowMask = _mm256_cmpgt_epi8 (chunk, lowLimit);
+
+		//Compare characters with 'z+1': z+1 > chunk ?
+    //store ones if smaller than 'z+1'
+    __m256i highMask = _mm256_cmpgt_epi8 (highLimit, chunk);
+
+    //mask to 32 where it is a lower case
+    lowMask = _mm256_and_si256 (modifier, lowMask);
+    lowMask = _mm256_and_si256 (lowMask, highMask);
+
+    //subtract
+    chunk = _mm256_subs_epu8 (chunk, lowMask);
+
+		//Store our 32 integers back to memory!
+		_mm256_storeu_si256 ((__m256i*)&(text[i]), chunk);
+
+	}
+}
+
+static void toupper_openmp(char * text)
+{
+    #pragma omp parallel for
+    for(int k = 0; k<array_sz; k++)
+    {
+      // The main idea here was to eliminate the branch prediction here and
+      // the unnecessary memory reads to the text array. The basic idea behind
+      // the code is to do a bit manipulation: we only need to a minus calculation
+      // when the read character is inside of the range of 96 and 123. The code works
+      // by using the MSB - most significant bit - of the resulting combination in
+      // logic operator:
+      // Assume the element we have read is 'a' which is 97 in ASCII.
+      // (96 - 97) & (97 - 123) = (-1) & (-26) = -26 in bitwise & operator. If you look
+      // at the binary representation of -26, you can see that it's MSB is 1. We then do
+      // do a shift arithmetic right operation with 7 - since chars are 8 bits - bits
+      // to carry the MSB over all the bits of the number. And then (-26) & (-32) results
+      // in (-32) hence we minus the value from the number.
+      // If we have read an already capital element like 'A' which is 65 in ASCII:
+      // (96 - 65) & (65 - 123) = (31) & (-58) = 6 with a 0 as MSB, then 0 & (-32) = 0
+      // hence we do not need to substract from the character.
+      text[k] += (((96 - text[k]) & (text[k] - 123)) >> 7) & (-32);
+    }
+}
+
+static void toupper_openmp_1_thr(char * text)
+{
+    #pragma omp parallel for num_threads(1)
+    for(int k = 0; k<array_sz; k++)
+      text[k] += (((96 - text[k]) & (text[k] - 123)) >> 7) & (-32);
+}
+
+static void toupper_openmp_2_thr(char * text)
+{
+    #pragma omp parallel for num_threads(2)
+    for(int k = 0; k<array_sz; k++)
+      text[k] += (((96 - text[k]) & (text[k] - 123)) >> 7) & (-32);
+}
+
+static void toupper_openmp_4_thr(char * text)
+{
+    #pragma omp parallel for num_threads(4)
+    for(int k = 0; k<array_sz; k++)
+      text[k] += (((96 - text[k]) & (text[k] - 123)) >> 7) & (-32);
+}
+
+// inline assembly code
+static void toupper_assembly(char * text) {
+    int sub, i = 0;
+    int bound = 0;
+    int curr;
+    while(text[i] != '\0')
+    {
+        curr = (int)text[i];
+        __asm__ (
+                 "cmp %%ebx, %%eax;"
+                 "jg GREATER;"
+                 "jmp REST;"
+                 "GREATER: cmp %%eax, %%edx;"
+                 "jg REST;"
+                 "movl %1, %%edx;"
+                 "jmp REST;"
+                 "REST: "
+                 : "=d" (bound) : "a" (curr) , "b" (96), "c" (123), "d" (0) );
+        //if(debug) printf("Bound: for %d is  %d ...\n", text[i], bound);
+        if(bound > 0)
+        {
+         //   if(debug) printf("optimization changes the value for %d", text[i]);
+            __asm__ ( "subl %%ebx, %%eax;" : "=a" (text[i]) : "a" (curr) , "b" (32) );
+        }
+        __asm__ ( "addl %%ebx, %%eax;" : "=a" (i) : "a" (1), "b" (i) );
+    }
+}
 
 // align at 16byte boundaries
 void* mymalloc(unsigned long int size)
@@ -62,7 +356,6 @@ void* mymalloc(unsigned long int size)
      return (void*)((unsigned long int)addr /16*16+16);
 }
 
-// Randomly generate a letter character
 char createChar(int ratio){
 	char isLower = rand()%100;
 
@@ -78,7 +371,6 @@ char createChar(int ratio){
 
 }
 
-// Creates a string
 char * init(unsigned long int sz, int ratio){
     int i=0;
     char *text = (char *) mymalloc(sz+1);
@@ -125,8 +417,19 @@ struct _toupperversion {
     const char* name;
     toupperfunc func;
 } toupperversion[] = {
-    { "simple",    toupper_simple },
-    { "optimised", toupper_optimised },
+    { "naive", toupper_naive },
+    { "simple", toupper_simple },
+    { "bytes", toupper_bytes },
+    { "assembly", toupper_assembly },
+    { "openMP", toupper_openmp },
+    { "intrinsics", toupper_intrinsics },
+    { "combined", toupper_combined },
+    { "combined_1_thr", toupper_combined_1_thr },
+    { "combined_2_thr", toupper_combined_2_thr },
+    { "combined_4_thr", toupper_combined_4_thr },
+    { "openMP_1_thr", toupper_openmp_1_thr },
+    { "openMP_2_thr", toupper_openmp_2_thr },
+    { "openMP_4_thr", toupper_openmp_4_thr },
     { 0,0 }
 };
 
@@ -160,6 +463,8 @@ void printresults(){
 
 int main(int argc, char* argv[])
 {
+     //omp_set_num_threads(2);
+
     unsigned long int min_sz=800000, max_sz = 0, step_sz = 10000;
 		int min_ratio=50, max_ratio = 0, step_ratio = 1;
 		int arg,i,j,v;
@@ -187,6 +492,7 @@ int main(int argc, char* argv[])
 			}
 
 		}
+
     for(v=0; toupperversion[v].func !=0; v++)
 		no_version=v+1;
 		if(0==max_sz)  no_sz =1;
@@ -205,7 +511,12 @@ int main(int argc, char* argv[])
 
 		for(i=0;i<no_sz;i++)
 			for(j=0;j<no_ratio;j++)
-				run(i,j);
+      {
+        array_sz = sizes[i];
+        run(i,j);
+      }
+
+
 
 		printresults();
     return 0;
