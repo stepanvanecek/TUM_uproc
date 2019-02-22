@@ -39,59 +39,54 @@ static void toupper_simple(char * text) {
     }
 }
 
-/** Intrinsics implementation -- not working right now **/
-
-/*static void toupper_optimised(char * text) {
-  // to be implemented
-    int upperBound, lowerBound;
-    __m256i curr;
-    int i = 0;
-    __m256i lower = _mm256_cvtepi8_epi16(_mm_load_si128((__m128i*)96));
-    printf("lower: %d", lower);
-    __m256i upper = _mm256_cvtepi8_epi16(_mm_load_si128((__m128i*)123));
-    printf("upper: %d", upper);
-   /* while(text[i] != '\0')
-    {
-        curr = _mm256_cvtepi8_epi16(_mm_load_si128((__m128i*)text[i]));
-        printf("curr: %d", curr);
-        upperBound = _mm256_cvtsi256_si32 (_mm256_cmpgt_epi16 (curr, lower));
-        lowerBound = _mm256_cvtsi256_si32 (_mm256_cmpgt_epi16(curr, upper));
-        if( lowerBound && !upperBound )
-        {
-            text[i] -= 32;
-        }
-        i++;
-    }
-} */
-
-// inline assembly code
+// inline assembly code ARM
 static void toupper_optimised(char * text) {
     int sub, i = 0;
     int bound = 0;
     int curr;
+    int r0;
+    int r1;
     while(text[i] != '\0')
     {
         curr = (int)text[i];
-        __asm__ (
-                 "cmp %%ebx, %%eax;"
-                 "jg GREATER;"
-                 "jmp REST;"
-                 "GREATER: cmp %%eax, %%edx;"
-                 "jg REST;"
-                 "movl %1, %%edx;"
-                 "jmp REST;"
+        __asm (
+                 "mov r0, %[value];"
+                 "cmp r0, #96;"
+                 "bl REST;"
+                 "cmp r0, #123;"
+                 "sublt r0, r0, #32;"
                  "REST: "
-                 : "=d" (bound) : "a" (curr) , "b" (96), "c" (123), "d" (0) );
-        //if(debug) printf("Bound: for %d is  %d ...\n", text[i], bound);
-        if(bound > 0)
-        {
-         //   if(debug) printf("optimization changes the value for %d", text[i]);
-            __asm__ ( "subl %%ebx, %%eax;" : "=a" (text[i]) : "a" (curr) , "b" (32) );
-        }
-        __asm__ ( "addl %%ebx, %%eax;" : "=a" (i) : "a" (1), "b" (i) );
+                 "mov %[result], r0;"
+          : [result] "=d" (bound) : [value] "a" (curr));
+        text[i] = bound;
+        i++;
     }
 }
 
+// inline assembly code MIPS
+static void toupper_optimised(char * text) {
+    int sub, i = 0;
+    int bound = 0;
+    int curr;
+    int s0;
+    int s1;
+    while(text[i] != '\0')
+    {
+        curr = (int)text[i];
+        __asm (
+               "addi $s0, %[value], %0;"
+               "sub $s1 $s0, 96"
+               "blez $s1 REST;"
+               "sub $s2 $s0, 123"
+               "bgtz $s2, REST;"
+               "addi $s0, $s0, -32;"
+               "REST: "
+               "addi %[result], $s0, %0;"
+               : [result] "=m" (bound) : [value] : "=r" (curr));
+        text[i] = bound;
+        i++;
+    }
+}
 
 /*****************************************************************/
 
